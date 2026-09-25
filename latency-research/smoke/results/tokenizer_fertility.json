@@ -1,0 +1,98 @@
+[
+  {
+    "tokenizer": "Whisper (multilingual BPE)",
+    "repo": "waxal-benchmarking/whisper-small-waxal-amh",
+    "role": "ASR decoder",
+    "vocab": 51865,
+    "tok_per_word_news": 12.22,
+    "tok_per_word_speech": 11.68,
+    "chars_per_tok": 0.34,
+    "tok_per_word_english": 1.19,
+    "amh_to_eng_ratio": 10.31,
+    "tokens_for_30_word_reply": 367
+  },
+  {
+    "tokenizer": "Qwen3 / Qwen3-ASR",
+    "repo": "Qwen/Qwen3-0.6B",
+    "role": "LLM + ASR decoder",
+    "vocab": 151669,
+    "tok_per_word_news": 6.48,
+    "tok_per_word_speech": 6.37,
+    "chars_per_tok": 0.64,
+    "tok_per_word_english": 1.19,
+    "amh_to_eng_ratio": 5.47,
+    "tokens_for_30_word_reply": 194
+  },
+  {
+    "tokenizer": "Qwen3.5",
+    "repo": "Qwen/Qwen3.5-0.8B",
+    "role": "LLM",
+    "vocab": 248070,
+    "tok_per_word_news": 7.08,
+    "tok_per_word_speech": 6.81,
+    "chars_per_tok": 0.59,
+    "tok_per_word_english": 1.19,
+    "amh_to_eng_ratio": 5.97,
+    "tokens_for_30_word_reply": 212
+  },
+  {
+    "tokenizer": "Llama 3.2 (base)",
+    "repo": "unsloth/Llama-3.2-1B-Instruct",
+    "role": "LLM",
+    "vocab": 128256,
+    "tok_per_word_news": 12.18,
+    "tok_per_word_speech": 11.64,
+    "chars_per_tok": 0.34,
+    "tok_per_word_english": 1.19,
+    "amh_to_eng_ratio": 10.27,
+    "tokens_for_30_word_reply": 365
+  },
+  {
+    "tokenizer": "Llama-3.2-1B-Amharic (rasyosef)",
+    "repo": "rasyosef/Llama-3.2-1B-Amharic-Instruct",
+    "role": "LLM",
+    "vocab": 143378,
+    "tok_per_word_news": 1.7,
+    "tok_per_word_speech": 1.65,
+    "chars_per_tok": 2.45,
+    "tok_per_word_english": 1.19,
+    "amh_to_eng_ratio": 1.43,
+    "tokens_for_30_word_reply": 51
+  },
+  {
+    "tokenizer": "Gemma 3",
+    "repo": "unsloth/gemma-3-1b-it",
+    "role": "LLM",
+    "vocab": 262145,
+    "tok_per_word_news": 3.26,
+    "tok_per_word_speech": 2.86,
+    "chars_per_tok": 1.27,
+    "tok_per_word_english": 1.11,
+    "amh_to_eng_ratio": 2.94,
+    "tokens_for_30_word_reply": 98
+  },
+  {
+    "tokenizer": "Gemma 4",
+    "repo": "unsloth/gemma-4-E2B-it",
+    "role": "LLM",
+    "vocab": 262144,
+    "tok_per_word_news": 3.26,
+    "tok_per_word_speech": 2.86,
+    "chars_per_tok": 1.27,
+    "tok_per_word_english": 1.11,
+    "amh_to_eng_ratio": 2.94,
+    "tokens_for_30_word_reply": 98
+  },
+  {
+    "tokenizer": "Phi-4-mini",
+    "repo": "microsoft/Phi-4-mini-instruct",
+    "role": "LLM",
+    "vocab": 200029,
+    "tok_per_word_news": 9.14,
+    "tok_per_word_speech": 8.8,
+    "chars_per_tok": 0.45,
+    "tok_per_word_english": 1.15,
+    "amh_to_eng_ratio": 7.96,
+    "tokens_for_30_word_reply": 274
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "n_utts": 30,
+  "vad_frame_ms": 32.0,
+  "silero_ms_per_frame_median": 0.221,
+  "silero_realtime_share_pct": 0.76,
+  "internal_pauses_per_utt": 7.1,
+  "pause_ms_p50_p90_p99": [
+    160,
+    480,
+    892
+  ],
+  "false_endpoints_per_utt_by_hangover_ms": {
+    "200": 2.3,
+    "300": 1.53,
+    "500": 0.53,
+    "700": 0.27,
+    "1000": 0.03
+  },
+  "smart_turn_ms_median": 120.5,
+  "smart_turn_p_complete_at_end_median": 0.936,
+  "smart_turn_p_complete_at_midpause_median": 0.95,
+  "smart_turn_end_detected_rate@0.5": 0.9,
+  "smart_turn_midpause_false_complete_rate@0.5": 0.84,
+  "n_midpause_probes": 69
+}
