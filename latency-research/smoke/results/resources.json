@@ -1,0 +1,9 @@
+{
+  "python_baseline_MB": 22,
+  "whisper_small_ct2_int8_MB": 551,
+  "whisper_tiny_ct2_int8_MB": 129,
+  "mms300m_ctc_fp32_MB": 1602,
+  "mms_tts_vits_MB": 167,
+  "llama_server_1B_q4km_ctx2048_MB": 1457,
+  "system_total_RAM_GB": 16.6
+}
