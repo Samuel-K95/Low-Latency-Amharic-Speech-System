@@ -1,0 +1,12 @@
+# downloaded or generated locally, see README "Reproduce"
+.venv/
+__pycache__/
+smoke/models/
+smoke/bin/
+smoke/audio/waxal_amh_test/
+smoke/data/
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/main.pdf
