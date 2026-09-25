@@ -1,0 +1,110 @@
+{
+  "summary": {
+    "tiny": {
+      "audio_s": 5.02,
+      "encoder_s": 0.55,
+      "decoder_s": 0.34,
+      "tokens": 45,
+      "ms_per_token": 8.0
+    },
+    "small": {
+      "audio_s": 5.02,
+      "encoder_s": 3.79,
+      "decoder_s": 1.87,
+      "tokens": 45,
+      "ms_per_token": 37.6
+    }
+  },
+  "rows": [
+    {
+      "model": "tiny",
+      "file": "q0.wav",
+      "audio_s": 5.02,
+      "encoder_s": 0.55,
+      "decoder_s": 0.34,
+      "tokens": 41,
+      "ms_per_token": 8.2
+    },
+    {
+      "model": "tiny",
+      "file": "q1.wav",
+      "audio_s": 5.75,
+      "encoder_s": 0.58,
+      "decoder_s": 0.56,
+      "tokens": 81,
+      "ms_per_token": 7.0
+    },
+    {
+      "model": "tiny",
+      "file": "q2.wav",
+      "audio_s": 4.66,
+      "encoder_s": 0.62,
+      "decoder_s": 0.34,
+      "tokens": 45,
+      "ms_per_token": 7.6
+    },
+    {
+      "model": "tiny",
+      "file": "q3.wav",
+      "audio_s": 5.69,
+      "encoder_s": 0.53,
+      "decoder_s": 0.59,
+      "tokens": 72,
+      "ms_per_token": 8.2
+    },
+    {
+      "model": "tiny",
+      "file": "q4.wav",
+      "audio_s": 3.53,
+      "encoder_s": 0.53,
+      "decoder_s": 0.24,
+      "tokens": 30,
+      "ms_per_token": 8.0
+    },
+    {
+      "model": "small",
+      "file": "q0.wav",
+      "audio_s": 5.02,
+      "encoder_s": 3.96,
+      "decoder_s": 1.65,
+      "tokens": 44,
+      "ms_per_token": 37.6
+    },
+    {
+      "model": "small",
+      "file": "q1.wav",
+      "audio_s": 5.75,
+      "encoder_s": 3.79,
+      "decoder_s": 2.39,
+      "tokens": 69,
+      "ms_per_token": 34.7
+    },
+    {
+      "model": "small",
+      "file": "q2.wav",
+      "audio_s": 4.66,
+      "encoder_s": 3.72,
+      "decoder_s": 1.87,
+      "tokens": 45,
+      "ms_per_token": 41.6
+    },
+    {
+      "model": "small",
+      "file": "q3.wav",
+      "audio_s": 5.69,
+      "encoder_s": 3.82,
+      "decoder_s": 2.55,
+      "tokens": 72,
+      "ms_per_token": 35.4
+    },
+    {
+      "model": "small",
+      "file": "q4.wav",
+      "audio_s": 3.53,
+      "encoder_s": 3.7,
+      "decoder_s": 1.4,
+      "tokens": 30,
+      "ms_per_token": 46.8
+    }
+  ]
+}
