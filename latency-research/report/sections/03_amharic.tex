@@ -1,0 +1,50 @@
+\section{What makes Amharic different (for latency and quality)}
+\label{sec:amharic}
+
+Most published latency engineering assumes English. Five properties of Amharic change the picture;
+the first two are \emph{latency} problems, the rest are \emph{quality} problems that latency
+optimisations can make worse.
+
+\paragraph{1. The script is expensive for byte-level tokenizers.}
+Amharic is written in the Ge'ez abugida (\textit{fidel}): each character is a consonant+vowel
+syllable in the Unicode range U+1200–U+137F. UTF-8 stores each character in 3 bytes, and most
+multilingual BPE vocabularies contain few Ethiopic merges. The result is that one Amharic word costs
+several times more tokens than one English word, and \textbf{every extra token is an extra
+autoregressive decoding step}, both in the LLM and in any Whisper-style ASR decoder. We measured this
+directly (Section~\ref{sec:m-tok}): 12.2 tokens per word for Whisper and Llama~3.2, 6.5 for Qwen3,
+3.3 for Gemma~3/4, and 1.7 for a Llama with an extended Amharic vocabulary.
+
+\paragraph{2. Spontaneous Amharic speech is full of pauses.}
+In the WAXAL test utterances we found 7.1 internal pauses per utterance, and the 90th percentile pause
+was 480\,ms (Section~\ref{sec:m-endpoint}). A silence-only endpointer must therefore wait long, or it
+cuts people off. The open semantic turn detector (Smart Turn~v3) was not trained on Amharic, and we
+found that it does not transfer.
+
+\paragraph{3. The script under-specifies pronunciation.}
+Gemination (doubled consonants) and some vowel distinctions are not written, and several letters
+are homophones in modern Amharic (\am{ሀ/ሐ/ኀ}, \am{ሰ/ሠ}, \am{አ/ዐ}, \am{ጸ/ፀ}). This means that
+(i) ASR output is judged unfairly unless homophones are folded before computing WER. Gete et al.\
+report that homophone normalisation substantially changes WER~\cite{whisperam}, and we fold them in
+all our metrics (\code{smoke/am\_text.py}). It also means that (ii) TTS needs either a pronunciation
+model or data that implicitly teaches gemination. MMS-TTS romanises input with \code{uroman} first,
+which merges ejectives with plain consonants and ignores gemination~\cite{mms}.
+
+\paragraph{4. Numbers, dates, time and calendar.}
+Ethiopia uses its own calendar (currently year 2019~E.C.) and a 12-hour clock that starts at dawn
+(``\am{ሶስት ሰዓት}'' is 9\,a.m.\ in international time). An assistant must say these correctly. Our
+TTS test showed that MMS-TTS \emph{silently drops digits} (``15'', ``2019''): the round-trip CER of the
+date sentence was 46\% (Section~\ref{sec:m-tts}). A number-to-words normaliser for Amharic is
+therefore mandatory before any TTS. It is fast, so it costs no meaningful latency.
+
+\paragraph{5. Code-switching and names.}
+Urban Amharic mixes English words (``meeting'', ``Zoom'', ``email''). ASR models trained on
+monolingual Amharic transcribe them in fidel or drop them, and TTS romanisers mispronounce them.
+Our code-switched sentence had 62\% round-trip CER. Ethiopian personal and place names (\am{አበበ
+በቀለ}, \am{ባህር ዳር}, \am{ላሊበላ}) are partly handled, at 22\% CER for the names sentence. The
+evaluation set must contain all of these (Section~\ref{sec:eval}).
+
+\begin{finding}[Consequence for design]
+For Amharic, the choice of \emph{tokenizer} is a latency decision, and \emph{text normalisation} is a
+quality requirement. A model that is fast in English can be several times slower in Amharic just
+because of how many tokens it has to emit.
+\end{finding}

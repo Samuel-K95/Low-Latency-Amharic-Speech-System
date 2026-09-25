@@ -1,0 +1,149 @@
+\section{How speech-to-speech systems work}
+\label{sec:how}
+
+There are three families of speech-to-speech conversational systems, and one important question for
+each: \emph{does it exist for Amharic today, with open weights?}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\sffamily\footnotesize, node distance=4mm,
+  blk/.style={draw=ink2, rounded corners=2pt, minimum height=7mm, minimum width=15mm, align=center, fill=white},
+  arr/.style={-{Stealth[length=2mm]}, ink2, semithick},
+  lab/.style={font=\sffamily\small\bfseries, anchor=west, text=ink}]
+% cascade
+\node[lab] at (-0.2,0.9) {(a) Cascaded (pipeline)};
+\node[blk] (m1) at (0.6,0) {mic};
+\node[blk, right=of m1, fill=s1!12] (v1) {VAD /\\turn detect};
+\node[blk, right=of v1, fill=s2!12] (a1) {ASR};
+\node[blk, right=of a1, fill=s3!12] (l1) {text LLM};
+\node[blk, right=of l1, fill=s4!15] (t1) {TTS};
+\node[blk, right=of t1] (p1) {speaker};
+\foreach \x/\y in {m1/v1,v1/a1,a1/l1,l1/t1,t1/p1} \draw[arr] (\x) -- (\y);
+\node[anchor=west, text=good, font=\sffamily\scriptsize] at (p1.east) {\ \ Amharic: yes (all parts exist)};
+% half cascade
+\node[lab] at (-0.2,-1.3) {(b) Half-cascade (audio-in LLM)};
+\node[blk] (m2) at (0.6,-2.2) {mic};
+\node[blk, right=of m2, fill=s1!12] (v2) {VAD};
+\node[blk, right=of v2, minimum width=37mm, fill=s3!12] (l2) {audio encoder + LLM\\{\scriptsize (e.g.\ Gemma 4 E2B/E4B)}};
+\node[blk, right=of l2, fill=s4!15] (t2) {TTS};
+\node[blk, right=of t2] (p2) {speaker};
+\foreach \x/\y in {m2/v2,v2/l2,l2/t2,t2/p2} \draw[arr] (\x) -- (\y);
+\node[anchor=west, text=warnc, font=\sffamily\scriptsize] at (p2.east) {\ \ Amharic: untested};
+% end-to-end
+\node[lab] at (-0.2,-3.5) {(c) End-to-end speech LLM (full duplex)};
+\node[blk] (m3) at (0.6,-4.4) {mic};
+\node[blk, right=of m3, minimum width=76mm, fill=s5!15] (e3) {speech tokens in $\rightarrow$ one model $\rightarrow$ speech tokens out\\{\scriptsize Moshi, GLM-4-Voice, Qwen3-Omni, LLaMA-Omni \dots}};
+\node[blk, right=of e3] (p3) {speaker};
+\draw[arr] (m3) -- (e3); \draw[arr] (e3) -- (p3);
+\node[anchor=west, text=bad, font=\sffamily\scriptsize] at (p3.east) {\ \ Amharic: no};
+\end{tikzpicture}
+\caption{The three system families. Only the cascade can be built for Amharic with open weights
+today. The half-cascade depends on whether an audio-input LLM understands Amharic speech, which is
+still to be tested (experiment E-HC-1).}
+\label{fig:families}
+\end{figure}
+
+\subsection{(a) Cascaded pipelines}
+A voice-activity detector (VAD) finds speech; a turn detector decides that the user has finished;
+automatic speech recognition (ASR) turns audio into text; a text LLM writes the reply; text-to-speech
+(TTS) turns it back into audio. Every component can be swapped independently, and every stage can
+be measured separately, which is exactly what the assignment requires. The cost is that latency
+\emph{adds up}, unless the stages overlap.
+
+\paragraph{Sequential vs.\ streaming cascades.}
+The naive cascade waits for each stage to finish before starting the next. A \emph{streaming}
+cascade passes partial results forward as soon as they exist:
+\begin{itemize}
+  \item \textbf{Streaming ASR} emits partial transcripts while the user is still talking, so at the
+  endpoint only the last few hundred milliseconds of audio remain to decode. CTC encoders do this
+  by processing overlapping chunks. Whisper can be forced into it with the \emph{LocalAgreement}
+  policy~\cite{machacek2023}, at the cost of roughly 3\,s lag on GPU. Qwen3-ASR has a native
+  2-second-chunk streaming mode~\cite{qwen3asr}.
+  \item \textbf{Streaming LLM} output is standard: tokens arrive one by one. The important quantities
+  are time to first token (TTFT, dominated by \emph{prefill} of the prompt) and time to the first
+  \emph{speakable} chunk, meaning the first clause boundary.
+  \item \textbf{Chunked or streaming TTS} synthesises the first clause while the LLM writes the next.
+  Non-autoregressive models (VITS, diffusion) must wait for a whole chunk of text. Codec-LM TTS
+  (e.g.\ Orpheus with SNAC) can emit audio frames incrementally.
+\end{itemize}
+Figure~\ref{fig:timeline} shows why this matters: in the streaming version, \ttfa\ contains only the
+\emph{head} of each stage, not its full duration.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[font=\sffamily\scriptsize, x=0.82cm, y=0.62cm]
+\def\row#1#2#3#4#5{\fill[#4] (#1,#2) rectangle (#3,#2+0.72); \node[anchor=center, text=ink] at ({(#1+#3)/2},#2+0.36) {#5};}
+% axis
+\draw[ink2, -{Stealth[length=1.6mm]}] (0,-0.4) -- (15.6,-0.4) node[anchor=west] {time};
+% --- sequential
+\node[anchor=east, font=\sffamily\small\bfseries] at (-0.1,4.7) {Sequential};
+\row{0}{4.3}{3}{rule}{user speaks}
+\row{3}{4.3}{3.8}{s1!55}{wait}
+\row{3.8}{4.3}{5.3}{s2!60}{ASR}
+\row{5.3}{4.3}{9.3}{s3!60}{LLM (whole reply)}
+\row{9.3}{4.3}{12.3}{s4!70}{TTS (whole reply)}
+\row{12.3}{4.3}{15.3}{ink2!25}{playback}
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}, ink] (3,4.15) -- (12.3,4.15) node[midway, below=4pt] {\ttfa\ (sequential)};
+% --- streaming
+\node[anchor=east, font=\sffamily\small\bfseries] at (-0.1,1.7) {Streaming};
+\row{0}{1.3}{3}{rule}{user speaks}
+\fill[s2!25] (0.6,2.15) rectangle (3,2.45); \node[anchor=east, text=ink2] at (0.5,2.3) {streaming ASR};
+\row{3}{1.3}{3.8}{s1!55}{wait}
+\row{3.8}{1.3}{4.2}{s2!60}{}
+\row{4.2}{1.3}{5.6}{s3!60}{LLM}
+\row{5.6}{1.3}{6.8}{s4!70}{TTS}
+\row{6.8}{1.3}{9.8}{ink2!25}{playback, chunk 1}
+\node[anchor=south, text=ink2, font=\sffamily\tiny, align=center] at (4.9,2.05) {first\\clause};
+\node[anchor=south, text=ink2, font=\sffamily\tiny, align=center] at (6.2,2.05) {first\\chunk};
+\fill[s3!30] (5.6,0.55) rectangle (9.0,0.95); \node[text=ink2] at (7.3,0.75) {LLM continues};
+\fill[s4!35] (9.0,0.55) rectangle (9.8,0.95);
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}, ink] (3,1.15) -- (6.8,1.15) node[midway, below=4pt] {\ttfa};
+\end{tikzpicture}
+\caption{Same components, two orchestrations (schematic, not to scale). Streaming moves ASR work
+before the endpoint and overlaps LLM and TTS generation with playback. \ttfa\ then depends on the
+endpoint wait, the tail of ASR, LLM time to first clause and TTS time for that clause.}
+\label{fig:timeline}
+\end{figure}
+
+\subsection{(b) Half-cascades: audio-in LLMs}
+Some recent LLMs accept audio directly and can answer spoken questions without a separate ASR step.
+Among open models, Gemma~4 E2B/E4B include a $\sim$300M-parameter audio encoder, support ASR and
+speech translation for audio up to 30\,s, and were pre-trained on 140+ languages~\cite{gemma4card}.
+The model card does not say whether its audio understanding covers Amharic. If it does, the
+ASR stage disappears, and so does the separate transcript decode that is very slow for Amharic
+(Section~\ref{sec:m-tok}). This is a high-value, low-cost test (E-HC-1).
+
+\subsection{(c) End-to-end speech LLMs}
+Full-duplex models such as Moshi~\cite{moshi} (about 200\,ms practical latency),
+LLaMA-Omni~\cite{llamaomni}, GLM-4-Voice~\cite{glm4voice} and Qwen3-Omni~\cite{qwen3omni} model
+speech tokens directly and can respond while the user is still talking. They represent the lowest
+latency possible in principle, but none of them produces Amharic speech. SeamlessM4T~v2 accepts
+Amharic speech but outputs Amharic only as \emph{text}, not speech~\cite{seamless}. Training such a
+model for Amharic is well beyond a two-week budget. \textbf{Conclusion: the realistic architecture is
+a streaming cascade, possibly a half-cascade, and the work is making every head of every stage
+short.}
+
+\subsection{Turn-taking: the stage everyone underestimates}
+\label{sec:how-turn}
+A VAD such as Silero~\cite{silero} tells speech from silence in under a millisecond per 32\,ms
+frame, but it cannot tell a \emph{thinking pause} from the \emph{end of a turn}. Pure-silence
+endpointers therefore wait a fixed \emph{hangover} (often 300--800\,ms~\cite{webrtcventures2026}),
+and that wait is added directly to \ttfa. There are two ways to shorten it:
+\begin{itemize}
+  \item \textbf{Semantic end-of-turn models}, which judge from prosody or words whether the speaker
+  is done. Smart Turn v3 uses a Whisper-tiny encoder with an 8M-parameter classifier on the last 8\,s
+  of audio, and covers 14 languages (not Amharic)~\cite{smartturn}. Text-based detectors run a small
+  LM on the partial transcript.
+  \item \textbf{Speculative response}: start ASR finalisation and LLM prefill at the \emph{first}
+  short pause, and throw the work away if the user continues. This hides the endpoint wait whenever
+  the guess is right.
+\end{itemize}
+
+\subsection{Where production systems spend their time}
+Industry latency budgets for (English) voice agents in 2026 put turn detection at 150--400\,ms,
+streaming ASR finalisation at 100--300\,ms, LLM TTFT at 250--500\,ms and TTS first audio at
+100--200\,ms, for a total of about 0.6--1.2\,s~\cite{webrtcventures2026,deepgram2026}. The two
+consistently largest items are \textbf{turn-taking} and \textbf{LLM time to first token}. Prompt
+caching of a fixed system prompt typically removes 200--400\,ms of TTFT~\cite{webrtcventures2026}.
+Section~\ref{sec:measure} tests how these proportions change for Amharic on a laptop CPU.

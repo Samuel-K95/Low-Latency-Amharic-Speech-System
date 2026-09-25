@@ -1,0 +1,32 @@
+\clearpage
+\section{Two-week plan}
+\label{sec:plan}
+
+A day-by-day plan for one person. Work items refer to experiment IDs in Section~\ref{sec:experiments}.
+Days already covered by this report are marked \textcolor{good}{\textbf{done}}.
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}L{2.3cm}Y L{3.6cm}@{}}
+\toprule
+\textbf{Day} & \textbf{Work} & \textbf{Output} \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Week 6 --- baseline, research, bottlenecks}}\\
+Wed 23 -- Thu 24 & Read the brief; survey architectures and Amharic models. \textcolor{good}{\textbf{done}} & Sections 2--5 \\
+Fri 25 & CPU smoke tests of every stage; first end-to-end baseline; this report. \textcolor{good}{\textbf{done}} & Sections 6--8, \code{smoke/} \\
+Sat 26 & E-INF-2: record the conversational test set; E-INF-1: unify the harness. & Frozen test set, harness v1 \\
+Sun 27 & E-INF-3: Kaggle T4 notebook running the same harness; E-TTS-3: text normaliser. & GPU baseline table \\
+Mon 28 & E-ASR-3: CTC models on short turns (CPU and T4); E-HC-1: Gemma~4 audio-in check. & ASR decision \\
+Tue 29 & E-LLM-2/3/4: LLM ladder with caching and spoken prompts; start quality ratings. & LLM shortlist \\
+Wed 30 & E-TTS-7: OmniVoice-Amharic on T4; MMS vs OmniVoice MOS round 1. Week-6 checkpoint: baseline \ttfa\ (CPU and T4) and bottleneck ranking. & Week-6 report v2 \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Week 7 --- optimisation and final system}}\\
+Thu 1 & E-ASR-4: streaming CTC during speech; E-SYS-2 + E-LLM-7: contention control. & Largest CPU gain \\
+Fri 2 & E-TTS-4: first-chunk policy; E-EP-1: hangover sweep; E-SYS-4: network measurement. & Endpoint setting \\
+Sat 3 & E-EP-5: speculative turn end; E-LLM-6: speculative decoding / MTP. & \\
+Sun 4 & E-EP-3: Amharic Smart Turn fine-tune on Kaggle (training runs in the background). & \\
+Mon 5 & Integrate winners into the final system; live demo path (laptop client $\leftrightarrow$ T4). & Final system \\
+Tue 6 & Final evaluation on the held-out set: latency, WER/CER, MOS, ratings, resources, concurrency. & Final numbers \\
+Wed 7 & Final report and defence: baseline vs final, what worked, what failed, limitations. & Submission \\
+\bottomrule
+\end{tabularx}
+\end{center}

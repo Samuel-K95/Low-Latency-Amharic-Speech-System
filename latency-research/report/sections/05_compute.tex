@@ -1,0 +1,42 @@
+\section{Compute available for free}
+\label{sec:compute}
+
+The hardware decides which models are candidates at all, so it is treated as a design variable, not a
+given. Free-tier limits change often; the numbers below were collected in September 2026 from
+provider pages and 2026 guides~\cite{kagglegpu,colabfaq,lightningfree} and must be re-checked on
+sign-up.
+
+\begin{table}[H]
+\centering\small
+\begin{tabularx}{\textwidth}{@{}L{2.7cm}L{3.4cm}L{3.3cm}Y@{}}
+\toprule
+\textbf{Option} & \textbf{Hardware} & \textbf{Limits} & \textbf{Best use in this project} \\
+\midrule
+Laptop (ours) & i5-6300U, 2C/4T, AVX2 (no AVX-512 / VNNI), 15\,GB RAM, $\sim$2–5\,GB free disk & None; always available & The ``edge'' configuration. Every measurement in Section~\ref{sec:measure}. Final demo client (microphone and loudspeaker). \\
+Kaggle Notebooks & 2$\times$T4 (16\,GB each) or 1$\times$P100 & $\sim$30 GPU-h/week; sessions capped (9–12\,h); internet after phone verification & Main GPU benchmark machine: the same notebook reruns every experiment on the same hardware. \\
+Google Colab (free) & T4 16\,GB (when available) & Dynamic quota; idle timeout; $\le$12\,h sessions & Second GPU, OmniVoice demo notebook, quick checks. \\
+Lightning AI Studio (free tier) & T4/L4 via monthly credits; 1 persistent CPU studio & Monthly credit allowance (sources report 22–80 GPU-h/month) & Persistent environment. Exposing a port for a live demo is simpler than on Kaggle or Colab. \\
+Hugging Face Spaces & CPU basic (free); ZeroGPU needs PRO to host & Cold starts; queueing & Public demo of the CPU pipeline only. \\
+Oracle Cloud Always Free & 4 Arm Ampere OCPU, 24\,GB RAM & Always on & Optional always-on CPU server (llama.cpp performs well on Arm NEON). \\
+AWS SageMaker Studio Lab & – & Reported closed to new users in July 2026 & Not relied on. \\
+\bottomrule
+\end{tabularx}
+\caption{Free compute options. A T4 (Turing, 65 TFLOPS fp16, 320\,GB/s, no bf16) is the realistic
+GPU target: all fp16/int8 paths must work without bf16.}
+\label{tab:compute}
+\end{table}
+
+\paragraph{The network is part of \ttfa.} If the models run in a notebook in a US data centre and the
+microphone is in Addis Ababa, every turn pays at least one round trip for the user's audio and one
+for the response audio, plus any tunnel overhead (cloudflared, ngrok). This must be measured
+(experiment E-SYS-4). The design rule is to \textbf{co-locate all models on one machine} and to stream
+audio \emph{while the user speaks}, so that uploading the user's audio overlaps with speaking and
+only the response direction costs latency.
+
+\paragraph{Two target configurations.} We therefore optimise two configurations and report both:
+\begin{enumerate}
+  \item \textbf{CPU-only (edge)}: the laptop, no network. This is the hardest case and the most honest one,
+  and everything in Section~\ref{sec:measure} was measured here.
+  \item \textbf{Single T4 (server)}: all models on one Kaggle or Colab T4, with the laptop as a thin
+  audio client. This is the configuration most likely to reach the ``Good'' tier.
+\end{enumerate}

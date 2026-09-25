@@ -1,0 +1,34 @@
+\section{Risks, limitations of this report, and mitigations}
+\label{sec:risks}
+
+\subsection{Limitations of the measurements in this report}
+\begin{itemize}
+  \item \textbf{Small samples.} ASR used 30 utterances; the end-to-end runs used 5 turns per mode. The
+  numbers show which stage dominates and by how much, but they are not final statistics.
+  \item \textbf{Synthetic user turns.} The end-to-end test questions were synthesised with MMS-TTS
+  because no conversational recordings exist yet. ASR errors on them are therefore not representative,
+  which is why E-INF-2 is first.
+  \item \textbf{Monologue pause statistics.} WAXAL utterances are picture descriptions; questions are
+  probably more fluent, so the endpoint numbers are a pessimistic bound.
+  \item \textbf{Old CPU.} The i5-6300U (2016) has no AVX-512/VNNI, so int8 kernels gain less than on a
+  modern CPU. Every CPU result is a lower bound for ``laptop'' performance in general.
+  \item \textbf{Contention.} The laptop was also running an editor and a browser; we used medians to
+  limit the effect, but absolute numbers can shift by roughly 10\%.
+\end{itemize}
+
+\subsection{Project risks}
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}L{4.2cm}Y@{}}
+\toprule
+\textbf{Risk} & \textbf{Mitigation} \\
+\midrule
+No open LLM that is both fast and good in Amharic & Decide on the T4 ladder (E-LLM-2) early; accept a larger model on the GPU and win the time back with caching, short first clauses and speculative decoding. \\
+Free-GPU session limits and queueing during the demo & Keep the CPU path demo-ready; keep Kaggle and Colab notebooks identical; pre-download weights to a Kaggle dataset. \\
+Network latency from Ethiopia to US-hosted notebooks & Measure it (E-SYS-4); stream user audio during speech; fall back to the CPU demo. \\
+MMS-TTS licence is non-commercial & Fine for the assignment. For production, OmniVoice-Amharic (Apache-2.0) or a Piper voice trained on WAXAL (CC-BY-4.0). \\
+Disk space on the laptop ($\sim$2\,GB free) & Store large checkpoints on Kaggle; keep only int8/Q4 builds locally; the Xet cache (\code{\textasciitilde/.cache/huggingface/xet}, 9.4\,GB) can be cleared. \\
+Speculative tricks start speaking too early & Never play audio before the committed endpoint; count false starts as a guarded metric. \\
+Quality regressions hidden by latency wins & The decision rule's quality guards; blind human ratings on a fixed set. \\
+\bottomrule
+\end{tabularx}
+\end{center}

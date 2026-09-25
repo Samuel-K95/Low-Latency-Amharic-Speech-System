@@ -1,0 +1,76 @@
+\section{Bottleneck analysis}
+\label{sec:bottlenecks}
+
+\subsection{Ranking on the laptop (best usable configuration)}
+For the MMS-300M-CTC, 5-word-cap configuration (median \ttfa\ 5.9\,s), the stage medians are:
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}L{6.2cm}rrY@{}}
+\toprule
+\textbf{Stage} & \textbf{Median (s)} & \textbf{Share} & \textbf{Nature of the cost} \\
+\midrule
+ASR after endpoint (offline CTC over the whole turn) & 2.41 & 38\% & compute; avoidable by streaming \\
+TTS of the first chunk (under LLM contention) & 2.33 & 37\% & compute + contention \\
+LLM to first 5 words (warm cache) & 0.91 & 14\% & compute (prefill + $\sim$8 tokens) \\
+Endpoint wait (700\,ms hangover) & 0.70 & 11\% & \emph{pure waiting} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+(The shares are of the sum of stage medians, 6.35\,s, which differs slightly from the median \ttfa.)
+
+\textbf{Interpretation.}
+\begin{enumerate}
+  \item \textbf{ASR finalisation} is the largest term, and almost all of it is avoidable: the audio was
+  available while the user spoke. Streaming CTC (E-ASR-4) should reduce it to roughly one chunk
+  (0.2--0.4\,s on this CPU\proj).
+  \item \textbf{First-chunk TTS} costs 2.3\,s, of which about 0.9\,s is contention. The first chunks are
+  about 2.5\,s of audio, which would take about 1.4\,s on an idle CPU (RTF 0.57). While the LLM keeps
+  decoding in parallel, the effective RTF rises to 0.8--1.2\meas. Contention control (E-SYS-2) and a
+  faster runtime or voice (E-TTS-5/6) attack it.
+  \item \textbf{The LLM} is not the latency problem on this hardware once the prompt is cached; it is the
+  \emph{quality} problem.
+  \item \textbf{The endpoint wait} is small in this configuration only because the other terms are large. On a
+  GPU it becomes the dominant term.
+\end{enumerate}
+
+\subsection{Projected budgets after optimisation}
+The table below is a \emph{projection}\proj\ built from our CPU measurements, the literature numbers in
+Section~\ref{sec:components}, and the expected effect of the experiments. It is the hypothesis Week~7
+has to confirm or reject, not a result.
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}L{3.2cm}rrY@{}}
+\toprule
+\textbf{Stage} & \textbf{CPU now}\meas & \textbf{CPU target}\proj & \textbf{How} \\
+\midrule
+Endpoint wait & 0.70 & 0.30--0.45 & Amharic end-of-turn model + speculative start (E-EP-3/4/5) \\
+ASR after endpoint & 2.41 & 0.25--0.40 & Streaming CTC during speech; ONNX/OpenVINO (E-ASR-4/6) \\
+LLM to first chunk & 0.91 & 0.6--0.8 & Caching (done), spoken prompt, pinned cores (E-LLM-4/7) \\
+TTS first chunk & 2.33 & 0.5--1.0 & Contention control, ONNX VITS or Piper voice (E-SYS-2, E-TTS-5/6) \\
+\midrule
+\textbf{\ttfa} & \textbf{5.9} & \textbf{1.7--2.7} & ``Acceptable'' tier on a 2016 laptop \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}L{3.2cm}rY@{}}
+\toprule
+\textbf{Stage} & \textbf{T4 target}\proj & \textbf{Basis} \\
+\midrule
+Endpoint wait & 0.30--0.45 & Same as CPU (waiting does not get faster on a GPU) \\
+ASR after endpoint & 0.05--0.15 & CTC encoders run at RTF $\sim$0.001--0.006 on GPU~\cite{omniasr}; the last streaming chunk only \\
+LLM to first chunk & 0.3--0.5 & Gemma~4 E2B/E4B in 4-bit, cached prompt, $\sim$16 tokens for the first 5 words \\
+TTS first chunk & 0.2--0.5 & MMS-TTS on GPU, or OmniVoice with 8--16 steps on a short chunk~\cite{omnivoice} \\
+Network (laptop $\leftrightarrow$ notebook) & 0.2--0.4 & One response-direction trip plus the tunnel; to be measured (E-SYS-4) \\
+\midrule
+\textbf{\ttfa} & \textbf{1.1--2.0} & ``Good'' tier, with the endpoint wait and the network now dominant \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{finding}[Where Week 7 should spend its time]
+On the CPU: ASR streaming and TTS contention first (together $\approx$75\% of \ttfa). On the GPU: the
+endpoint wait and the network, because compute stops being the bottleneck. Both paths share the
+Amharic end-of-turn work. That is why E-EP-3/5 are P0 even though they save less on the CPU today.
+\end{finding}

@@ -1,0 +1,104 @@
+\section{Reproducing the measurements}
+\label{app:repro}
+
+\subsection{Files}
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}L{4.6cm}Y@{}}
+\toprule
+\textbf{Path (under \code{Week-6/smoke/})} & \textbf{Purpose} \\
+\midrule
+\code{fetch\_waxal.py} & Downloads 30 WAXAL Amharic test clips through the datasets-server rows API (no 900\,MB shards) and writes \code{audio/waxal\_amh\_test/manifest.jsonl}. \\
+\code{download\_models.py} & Downloads only the inference files of the tested models. \\
+\code{am\_text.py} & Amharic normalisation for WER/CER (NFC, punctuation, homophone folding). \\
+\code{sentences\_am.py} & TTS test sentences and user questions. \\
+\code{tokenizer\_fertility.py} & Tokens per Amharic word for eight tokenizers. \\
+\code{asr\_bench.py} & ASR accuracy and latency (\code{hf-whisper}, \code{ct2-whisper}, \code{hf-ctc} backends). \\
+\code{whisper\_split.py} & Whisper encoder vs decoder time on short turns. \\
+\code{endpoint\_bench.py} & Silero VAD cost, pause statistics, Smart Turn on Amharic. \\
+\code{llm\_bench.py} & llama.cpp server streaming: TTFT, first clause, cold/warm cache. \\
+\code{tts\_mms\_bench.py}, \code{tts\_roundtrip.py} & MMS-TTS latency and intelligibility (ASR round trip). \\
+\code{e2e\_baseline.py} & End-to-end harness, modes A/B/C, per-stage timing. \\
+\code{resources.py}, \code{summarize.py} & Memory footprint; collects all results into \code{results/summary.json}. \\
+\code{results/*.json} & Raw outputs behind every number in this report. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Commands}
+\begin{small}
+\begin{verbatim}
+cd Week-6 && python3 -m venv .venv && .venv/bin/pip install -r smoke/requirements.txt
+cd smoke
+../.venv/bin/python fetch_waxal.py && ../.venv/bin/python download_models.py
+../.venv/bin/python tokenizer_fertility.py
+# Whisper -> CTranslate2 int8
+../.venv/bin/ct2-transformers-converter --model <whisper-small-waxal-amh snapshot> \
+    --output_dir models/whisper-small-waxal-amh-ct2-int8 --quantization int8 \
+    --copy_files tokenizer.json preprocessor_config.json
+../.venv/bin/python asr_bench.py --backend ct2-whisper \
+    --model models/whisper-small-waxal-amh-ct2-int8 --label whisper-small-waxal_ct2-int8
+../.venv/bin/python asr_bench.py --backend hf-ctc --model <mms-300m-waxal-amh snapshot> \
+    --label mms300m-waxal_ctc-fp32
+../.venv/bin/python endpoint_bench.py
+../.venv/bin/python llm_bench.py --gguf <Llama-3.2-1B-Amharic-Instruct.Q4_K_M.gguf> \
+    --label llama32-1b-am-q4km_t2 --threads 2
+../.venv/bin/python tts_mms_bench.py && ../.venv/bin/python tts_roundtrip.py
+../.venv/bin/python e2e_baseline.py --asr <mms-300m snapshot> --asr_backend ctc \
+    --gguf <gguf> --label cpu_mms300mCTC-llama1B-mms \
+    --llm_threads 2 --hangover_ms 700 --modes BC
+python3 summarize.py
+\end{verbatim}
+\end{small}
+llama.cpp is the prebuilt CPU release \code{b11179} in \code{smoke/bin/}. The Week-6 virtual environment
+reuses PyTorch and transformers from the Week-4 environment through a \code{.pth} file to save about
+1\,GB of disk; \code{requirements.txt} lists everything needed for a clean install.
+
+\subsection{Building this PDF}
+\code{cd Week-6/report \&\& lualatex main \&\& lualatex main}. The laptop's TeX Live 2023 lacked
+\code{luaotfload}, so the matching TL-2023 packages \code{luaotfload}, \code{lualibs} and
+\code{lua-uni-algos} were installed into \code{\textasciitilde/texmf} (no root needed). Ge'ez text
+switches to Noto Serif Ethiopic automatically through \code{babel}'s \code{onchar} mechanism.
+
+\section{End-to-end test turns and transcripts}
+\label{app:turns}
+Mode~C runs, hangover 700\,ms. S = Whisper-small-WAXAL, T = Whisper-tiny-WAXAL, CTC = MMS-300M-WAXAL.
+CER over the five turns: S 14.7\%, T 22.0\%, CTC 15.6\%\meas.
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}lY@{}}
+\toprule
+\textbf{Reference} & \am{የኢትዮጵያ ዋና ከተማ ማን ናት?} \\
+S / T / CTC & \am{የትዮግያ ዋና ከተማማማ ናት} \;/\; \am{የትዮገያ ዋና ከተማ ማናት ነው።} \;/\; \am{የትዮጵያ ዋና ከተማ ማን ናት} \\
+LLM reply (CTC run) & \am{አዲስ አበባ} \\
+\midrule
+\textbf{Reference} & \am{ነገ ወደ ባህር ዳር ለመሄድ ምን ማድረግ አለብኝ?} \\
+S / T / CTC & \am{ነገረ ወደ ባህር ዳር ለመሄድ ምን አድረጋለብኝ} \;/\; \am{ነገረ ወደ ባህር ዳለመሄድ ምን ማዘረጋለለል አለደኛ} \;/\; \am{ነገር ወደ ባህር ዳ ለመሄድ ምን ማድረግ አለድኙ} \\
+LLM reply (CTC run) & \am{ውሃ ውስጥ ገብተህ ሞቃት ውሃ ውስጥ ከገባህ በኋላ ውሃው እንዲሞቅ አድርግ።} (off-topic) \\
+\midrule
+\textbf{Reference} & \am{ለጉንፋን ምን ማድረግ ይሻላል?} \\
+S / T / CTC & \am{ለጉንፋን ምን ማድረግ ይሻላል} \;/\; \am{ለቡንፋን ምን ማድረግ ይሻላል} \;/\; \am{ለጎንፋን ምን ማጥረግ ይሻላል} \\
+\midrule
+\textbf{Reference} & \am{ስለ ላሊበላ አብያተ ክርስቲያናት በአጭሩ ንገረኝ።} \\
+S / T / CTC & \am{ስለ ላሊበላ አብያተ ክርስቲያናት ባችሁ ነገርኝ} \;/\; \am{ስለላሊበላ አብያተ ክርስቲያናት ባቸው ነገረኝ።} \;/\; \am{ስለላሊመላ አብያተ ክርስቲያናት ባችሉ ንጋረኝ ነው።} \\
+\midrule
+\textbf{Reference} & \am{ቡና እንዴት ይፈላል?} \\
+S / T / CTC & \am{እና እንዴት ይፈላል} \;/\; \am{ውና እንዴት ይፈላል} \;/\; \am{ቡና እንዴት ይፈላል} \\
+LLM reply (CTC run) & \am{በቡና ላይ ያለው የጎንዮሽ ጉዳት ቡና መጠጣት እና ማኘክ ነው.} (fluent, not an answer) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+The questions were synthesised with MMS-TTS, so these transcripts say little about accuracy on real
+voices. They are included to show how ASR errors propagate into the LLM's answer.
+
+\section{Pitfalls found while measuring (for whoever repeats this)}
+\begin{enumerate}
+  \item \textbf{faster-whisper truncation}: Amharic transcripts are silently cut at 224 tokens (Section~\ref{sec:m-asr}).
+  \item \textbf{``Warm cache'' that is too warm}: if the benchmark repeats the \emph{same} question, the whole
+  prompt is cached and TTFT looks like 80\,ms. Prime only the system prompt (\code{llm\_bench.py} does).
+  \item \textbf{Sentence boundaries}: the Amharic LLM often ends sentences with an ASCII ``.'' rather than
+  \am{።}, so the clause detector must accept both.
+  \item \textbf{Empty first chunks}: list markers such as ``1.'' romanise to nothing and crash VITS; require at least two words.
+  \item \textbf{Hyper-threading}: 2 threads beat 4 for llama.cpp decoding and for VITS on this 2-core CPU.
+  \item \textbf{Disk}: the Hugging Face Xet chunk cache (\code{\textasciitilde/.cache/huggingface/xet}) grows to
+  about 10\,GB; set \code{HF\_XET\_CHUNK\_CACHE\_SIZE\_BYTES=0} when disk is tight.
+\end{enumerate}

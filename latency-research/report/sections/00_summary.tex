@@ -1,0 +1,59 @@
+\section*{Summary}
+\addcontentsline{toc}{section}{Summary}
+
+This report does three things for the Week-6 milestone. It explains how current speech-to-speech systems
+work and which open models exist for Amharic. It measures every stage of a complete Amharic
+speech-to-speech pipeline on the laptop CPU. And it turns the measured bottlenecks into a prioritised
+experiment programme for the rest of Week~6 and all of Week~7.
+
+\begin{keybox}
+\textbf{Baseline and progress (laptop CPU, measured).} The frozen baseline B0 (sequential cascade:
+Whisper-small-WAXAL $\rightarrow$ Amharic Llama-3.2-1B $\rightarrow$ MMS-TTS) needs \textbf{25.2\,s} median
+from the end of the user's speech to the first response audio. Streaming the LLM into TTS with a
+5-word first chunk and switching to an equally accurate CTC recogniser brings this to \textbf{5.9\,s
+median (6.8\,s p90), a 77\% reduction}, with no model made smaller and at equal character accuracy (CER 12.7 vs 13.0). The projected
+floor is about 1.7--2.7\,s on this laptop and 1.1--2.0\,s on a free T4 GPU (Section~\ref{sec:bottlenecks}).
+\end{keybox}
+
+\paragraph{Key findings.}
+\begin{enumerate}
+  \item \textbf{Only a cascade is buildable for Amharic today.} No open end-to-end speech model outputs
+  Amharic speech. A half-cascade using Gemma~4's audio input is untested for Amharic and is worth one
+  experiment (Section~\ref{sec:how}).
+  \item \textbf{Tokenization is a latency decision.} Tokens per Amharic word: 12.2 (Whisper, Llama~3.2),
+  9.1 (Phi-4-mini), 6.5--7.1 (Qwen3/3.5), 3.3 (Gemma~3/4), 1.7 (Amharic-extended Llama). Every token is a
+  sequential decode step in the LLM \emph{and} in Whisper-style ASR (Section~\ref{sec:m-tok}).
+  \item \textbf{CTC beats Whisper on short turns.} Whisper-small and MMS-300M-CTC have the same accuracy
+  (CER 13.0 vs 12.7), but Whisper always encodes a padded 30\,s window: its encoder takes 3.8\,s for a 5\,s question
+  on the laptop, versus 2.4\,s for the whole CTC recognition (Section~\ref{sec:m-asr}).
+  \item \textbf{Endpointing is a first-class bottleneck.} Spontaneous Amharic has 7.1 internal pauses per
+  utterance (p90 480\,ms). A 500\,ms silence rule cuts speakers off 0.53 times per utterance, and
+  about 1\,s is needed to be safe. The open semantic turn detector (Smart Turn v3.2) calls 84\% of mid-utterance
+  pauses ``complete'': it does not work for Amharic (Section~\ref{sec:m-endpoint}).
+  \item \textbf{On CPU the LLM is fast enough but not good enough.} The 1B Amharic model decodes at 14 tok/s
+  ($\approx$8 words/s) with 0.42\,s time to first token after prompt caching, but its answers are often wrong.
+  The LLM choice will be decided by quality on the GPU (Section~\ref{sec:m-llm}).
+  \item \textbf{The TTS front-end is a quality gate.} MMS-TTS silently drops digits (46\% round-trip CER on a
+  date sentence) and garbles English words (62\%). An Amharic text normaliser is required before any
+  quality evaluation (Section~\ref{sec:m-tts}).
+  \item \textbf{Orchestration is worth more than model size.} The same three models went from 25.2\,s to 9.2\,s
+  by streaming and chunking alone. On two CPU cores the remaining time is ASR finalisation (38\%) and
+  first-chunk TTS slowed by LLM contention (37\%) (Sections~\ref{sec:m-e2e},~\ref{sec:bottlenecks}).
+\end{enumerate}
+
+\paragraph{Recommended direction.} A streaming cascade with streaming CTC ASR that runs while the user
+speaks, an Amharic end-of-turn detector with speculative start, a cached and spoken-style LLM prompt, an
+Amharic text normaliser, and a capped first TTS chunk (Figure~\ref{fig:arch}). It will be optimised in two
+configurations, laptop CPU and single free T4, and both will be reported against the frozen baseline.
+
+\paragraph{Next five actions.} (1) Record the conversational test set and unify the harness;
+(2) rerun everything on a Kaggle T4; (3) streaming CTC ASR; (4) text normaliser; (5) CPU contention control
+and first-chunk tuning. The full backlog of 42 experiments, with decision rules, is in
+Section~\ref{sec:experiments}.
+
+\begin{caveat}[Scope of the numbers]
+End-to-end numbers come from 5 synthetic turns per configuration and ASR numbers from 30 WAXAL
+utterances. They are reliable for ranking stages and for detecting large effects (2$\times$ and more), not
+as final statistics. Section~\ref{sec:risks} lists the limitations.
+\end{caveat}
+\clearpage

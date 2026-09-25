@@ -1,0 +1,129 @@
+\section{Candidate components (open weights, September 2026)}
+\label{sec:components}
+
+This section surveys the open, self-hostable candidates for each stage. For every candidate we
+record quality evidence, the property that decides its latency, and whether it runs on the laptop
+CPU or needs a free GPU. Section~\ref{sec:measure} gives the measurements.
+WAXAL~\cite{waxal} (Google, CC-BY-4.0, released February 2026) is now the common Amharic
+benchmark: about 190\,h of transcribed, image-prompted \emph{spontaneous} Amharic speech (566
+training speakers), a 16\,h test set, and a TTS subset. Most numbers below refer to its test set.
+
+\subsection{Speech recognition (ASR)}
+The deciding latency property is the \textbf{decoder type}. \emph{Autoregressive} (AR) decoders
+(Whisper, LLM-based ASR) emit one token per step, and Amharic needs many tokens per word. CTC decoders
+emit all characters in one parallel pass, so their cost scales with audio length only. The second
+property is whether the encoder can run \textbf{incrementally} while the user speaks.
+
+\begin{table}[H]
+\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}L{3.5cm}rL{1.2cm}cY@{}}
+\toprule
+\textbf{Model} & \textbf{Params} & \textbf{Decoder} & \textbf{WAXAL WER/CER} & \textbf{Latency-relevant notes} \\
+\midrule
+Whisper large-v3, zero-shot & 1.55B & AR & 254 / 145\lit & Unusable without fine-tuning~\cite{waxalnet}. \\
+MMS-1B, zero-shot & 1B & CTC & 101 / 85\lit & Unusable zero-shot~\cite{waxalnet}. \\
+Omnilingual ASR 1B, zero-shot & 1B & CTC & 51.1 / 17.4\lit & 1{,}600+ languages; audio $\le$40\,s; GPU RTF 0.001--0.006 for CTC~\cite{omniasr,waxalnet}. \\
+\midrule
+\hfl{waxal-benchmarking/whisper-tiny-waxal-amh}{Whisper-tiny-WAXAL} & 39M & AR & 41.3 / 16.8\lit & Fast on CPU; fixed 30\,s encoder window. \\
+\hfl{waxal-benchmarking/whisper-small-waxal-amh}{Whisper-small-WAXAL} & 244M & AR & 33.6 / 12.9\lit & Best Whisper option; 3.8\,s encoder floor on our CPU\meas. \\
+\hfl{waxal-benchmarking/mms-300m-waxal-amh}{MMS-300M-WAXAL} & 300M & CTC & 37.8 / 13.2\lit & Cost $\propto$ audio length; chunked streaming possible. \\
+\hfl{waxal-benchmarking/omniasr-ctc-300m-waxal-amh}{OmniASR-CTC-300M-WAXAL} & 300M & CTC & n/a & fairseq2 checkpoint; same family as Omnilingual. \\
+Ethio-ASR (AfriHuBERT) & 94M & CTC & 30.95 / --\lit & Small and accurate; checkpoint availability to confirm~\cite{ethioasr}. \\
+Ethio-ASR (MMS-1B) & 1B & CTC & 26.14 / --\lit & Larger multilingual variant~\cite{ethioasr}. \\
+\hfl{badrex/Ethio-ASR-amharic}{Ethio-ASR-amharic} (w2v-BERT 2.0) & 600M & CTC & \textbf{22.37} / --\lit & Most accurate open Amharic ASR found; 2.4\,GB fp32; T4-friendly. \\
+\hfl{b1n1yam/qwen3-asr-0.6b-amharic-mixed}{Qwen3-ASR-0.6B-Amharic} & 0.6B & AR (LLM) & 36.6 / 15.6\lit & Native 2\,s-chunk streaming and 92\,ms TTFT on GPU~\cite{qwen3asr}; the Qwen tokenizer costs 6.5 tokens/word\meas. \\
+Whisper-large-v3-turbo Amharic (Bell) & 809M & AR (4 layers) & n/a & Gated. Cheap turbo decoder, but the large encoder is expensive on CPU. \\
+Gemma~4 E2B/E4B audio encoder & $\sim$300M enc. & AR (LLM) & unknown & Half-cascade (Section~\ref{sec:how}); Amharic audio untested. \\
+\bottomrule
+\end{tabularx}
+\caption{ASR candidates (model names link to Hugging Face). Most WAXAL numbers are from the WAXAL-NET
+benchmark~\cite{waxalnet} or the model cards; WER normalisation differs between sources. Our own
+numbers (Section~\ref{sec:m-asr}) use one normaliser for all models.}
+\label{tab:asr-cands}
+\end{table}
+
+\paragraph{Runtimes for ASR.} CTranslate2 / faster-whisper (int8 on CPU, fp16 on GPU),
+whisper.cpp (supports \code{--audio-ctx} to shrink the fixed 30\,s encoder window for short
+utterances), ONNX Runtime and OpenVINO for wav2vec2-family CTC models (OpenVINO targets exactly this
+kind of Intel CPU), sherpa-onnx for streaming CTC/transducer models with a built-in VAD, and vLLM for
+Qwen3-ASR on GPU.
+
+\subsection{Response generation (LLM)}
+Two properties dominate latency: \textbf{time to first token} (prefill, which scales with prompt length and
+model size and is largely removed by prompt caching) and \textbf{tokens per Amharic word} (decode
+steps). A model that knows Amharic but emits 7 tokens per word is, on the same hardware, about twice as
+slow per spoken word as one that emits 3.3.
+
+\begin{table}[H]
+\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}L{3.6cm}L{1.7cm}cY@{}}
+\toprule
+\textbf{Model} & \textbf{Params} & \textbf{Tok/word}\meas & \textbf{Amharic evidence and latency notes} \\
+\midrule
+\hfl{rasyosef/Llama-3.2-1B-Amharic-Instruct}{Llama-3.2-1B-Amharic-Instruct} & 1.24B & \textbf{1.70} & Continued pre-training on Amharic plus an extended vocabulary. Fluent but often factually wrong in our test\meas. 14 tok/s decode on the laptop\meas. \\
+Llama-3.2-400M / 180M-Amharic-Instruct & 0.4 / 0.18B & -- & Weaker. Candidate \emph{draft} models for speculative decoding if their vocabulary matches the 1B model. \\
+\hfl{google/gemma-4-E2B-it}{Gemma~4 E2B-it} & 2.3B eff.\ (5.1B) & 3.26 & Pre-trained on 140+ languages~\cite{gemma4card}. Q4 GGUF 3.1\,GB. Ships an MTP draft head for speculative decoding. Amharic quality to be tested. \\
+Gemma~4 E4B-it & 4.5B eff.\ (8B) & 3.26 & Stronger; realistic on a T4 in 4-bit. \\
+Gemma~3 4B / 12B-it & 4 / 12B & 3.26 & Gemma~2 27B was the best open model on most AfroBench languages~\cite{afrobench}; 12B fits a T4 in 4-bit. \\
+Qwen3 / Qwen3.5 & 0.6--4B & 6.48 / 7.08 & Good general ability, but about 2$\times$ the tokens of Gemma per Amharic word. \\
+Qwen3.5-Amharic-4B-thinking (community) & 4B & 7.08 & Amharic fine-tune. ``Thinking'' must be off: hidden reasoning tokens delay the first spoken word. \\
+Llama~3.2 (base) & 1--3B & 12.18 & Byte-level for Amharic; slow and weak. \\
+Phi-4-mini & 3.8B & 9.14 & Not suitable. \\
+\bottomrule
+\end{tabularx}
+\caption{LLM candidates. The tokens-per-word column is measured on 3{,}000 Amharic news sentences
+(Section~\ref{sec:m-tok}).}
+\label{tab:llm-cands}
+\end{table}
+
+\paragraph{Translation cascade (considered and rejected).} Translating Amharic$\rightarrow$English,
+answering in English, and translating back (e.g.\ with NLLB) adds two sequence-to-sequence passes
+before the first Amharic word exists. That adds about 2$\times$ the latency, and the rigid translations
+hurt naturalness. We keep it only as a quality fallback, not as a latency candidate.
+
+\paragraph{Runtimes for LLMs.} llama.cpp (GGUF; CPU and CUDA; prompt cache; speculative decoding
+including Gemma~4 MTP heads; grammar-constrained output), vLLM and SGLang (GPU; prefix caching;
+continuous batching for concurrency; fp16 on a T4, which has no bf16), and TensorRT-LLM.
+
+\subsection{Speech synthesis (TTS)}
+The deciding property is \textbf{time to first playable audio} for the first chunk. Non-autoregressive
+models (VITS, diffusion) must synthesise a whole chunk before playing, so a \emph{short first chunk}
+is the key lever. Codec-LM models (Orpheus + SNAC) can stream audio frame by frame, but they need
+roughly 80+ codec tokens per second of audio, which means a GPU.
+
+\begin{table}[H]
+\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}L{3.3cm}rL{2.8cm}Y@{}}
+\toprule
+\textbf{Model} & \textbf{Params} & \textbf{Architecture} & \textbf{Notes} \\
+\midrule
+\hfl{facebook/mms-tts-amh}{MMS-TTS-amh} & 36M & VITS (non-autoregressive) & Input romanised with \code{uroman}; CC-BY-NC-4.0 (non-commercial). RTF 0.57 on the laptop\meas. Drops digits and mispronounces English\meas. \\
+\hfl{african-low-resource/omnivoice-amharic}{OmniVoice-Amharic} (Gheero-Leyu fork: \hfl{gheero-Leyu/amharic-omnivoice-tts}{link}) & 613M & Discrete diffusion (Qwen3-0.6B + HiggsAudioV2 codec) & Trained on $\sim$331\,h of Amharic; zero-shot voice cloning from 10\,s; Apache-2.0; about 3\,GB VRAM on a T4. The base OmniVoice reaches RTF 0.025 on an H100 with 32 steps, and 16 steps is faster~\cite{omnivoice}. MOS and CER are still ``TBD'' on the card. \\
+\hfl{Bmancman/amharic-get-tts}{Orpheus-3B-Amharic} (+ GGUF) & 3B & LLM $\rightarrow$ SNAC codec tokens & True frame-level streaming; needs a strong GPU for real time; 6.6\,GB. \\
+\hfl{AddisuSeteye/speecht5_tts_amharic}{SpeechT5-Amharic} & 144M & SpeechT5 + HiFi-GAN & Trained on ALFFA; autoregressive spectrogram decoder. \\
+Piper voice trained on WAXAL-TTS & $\sim$20M & VITS (ONNX) & No Amharic voice exists yet. Piper is built for fast CPU inference, so this is a strong candidate for the CPU path (E-TTS-6). \\
+\bottomrule
+\end{tabularx}
+\caption{TTS candidates. The Gheero-Leyu fork of OmniVoice-Amharic suggests it may already be the
+organisation's preferred voice. Its speed on a T4 is the most important unknown for Week~7.}
+\label{tab:tts-cands}
+\end{table}
+
+\subsection{VAD and turn detection}
+\begin{itemize}
+  \item \textbf{Silero VAD} (MIT; 2\,MB ONNX): 0.22\,ms per 32\,ms frame on the laptop\meas. Negligible cost.
+  \item \textbf{TEN VAD}: a newer low-latency VAD that claims faster speech-to-silence transitions; worth a direct comparison.
+  \item \textbf{Smart Turn v3.2} (BSD-2; 8M params; Whisper-tiny encoder): audio-only semantic end-of-turn
+  for 14 languages. 120\,ms per call on our CPU\meas; \textbf{does not work on Amharic}\meas\ (Section~\ref{sec:m-endpoint}).
+  Its training code is open, so an Amharic fine-tune on WAXAL is feasible (E-EP-3).
+  \item \textbf{Text-based end-of-utterance models}: a small LM scores whether the partial transcript
+  is a complete sentence. They need an Amharic model, which could be the 180M Amharic Llama.
+\end{itemize}
+
+\subsection{Orchestration and transport}
+\textbf{Pipecat} (Python; frame-based pipelines; built-in interruption handling, Smart Turn and Silero
+integration) and \textbf{LiveKit Agents} (WebRTC) are the open frameworks used in production voice
+agents. A plain \code{asyncio} WebSocket server with 20\,ms 16\,kHz PCM frames is simpler and makes
+every millisecond visible. For a single-machine demo, in-process queues avoid all network cost. Our
+recommendation is to build the measurement harness on plain asyncio, and to adopt Pipecat only if its
+interruption handling saves real work.

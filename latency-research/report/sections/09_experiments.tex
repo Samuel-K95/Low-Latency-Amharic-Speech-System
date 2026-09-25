@@ -1,0 +1,132 @@
+\section{Experiment programme}
+\label{sec:experiments}
+
+This is the backlog for the rest of Week~6 and all of Week~7. Every experiment follows the same
+contract:
+\begin{keybox}
+\textbf{Contract.} (1) State a hypothesis with an expected effect on \ttfa\ in milliseconds. (2) Change
+\emph{one} thing relative to the current best configuration. (3) Rerun the frozen test set
+(Section~\ref{sec:eval}) with the shared harness and report median, p90 and the stage breakdown.
+(4) Apply the \emph{decision rule}: \textbf{keep} the change if the median \ttfa\ improves by at least
+10\% or 200\,ms (whichever is smaller) \emph{and} no quality guard is violated. The guards are ASR CER
++2 points absolute; TTS round-trip CER +3 points; LLM relevance rating $-0.3$ on the 1--5 scale;
+false cut-off rate +5 points. (5) Log the experiment, including failed ones, in
+\code{DECISIONS\_LOG.md}.
+\end{keybox}
+
+Priorities: \textbf{P0} = do first, large expected gain or a prerequisite; \textbf{P1} = strong
+candidate; \textbf{P2} = stretch or insight only. Hardware: \textbf{C} = laptop CPU, \textbf{G} = free T4.
+Expected gains are \proj\ projections from Section~\ref{sec:bottlenecks} and must be measured.
+
+\setlength{\tabcolsep}{3.5pt}
+\newcommand{\exprow}[6]{\textbf{#1} & #2 & #3 & #4 & #5 & #6 \\}
+\newcommand{\exphead}{\toprule \textbf{ID} & \textbf{Experiment and hypothesis} & \textbf{Measure / decision} & \textbf{HW} & \textbf{Pri} & \textbf{Est.} \\ \midrule}
+
+\subsection{Infrastructure (prerequisites)}
+\begingroup\footnotesize
+\begin{longtable}{@{}L{1.45cm}L{5.7cm}L{4.2cm}L{1.0cm}cL{1.5cm}@{}}
+\exphead
+\exprow{E-INF-1}{Unify the smoke scripts into one harness: one JSON record per turn with every stage timestamp, transcripts, reply, token counts, CPU/RAM/VRAM; one command reruns all variants on the frozen test set.}{Reproducibility: two consecutive runs agree within 5\% median.}{C,G}{P0}{--}
+\exprow{E-INF-2}{Record the frozen \emph{conversational} test set (Section~\ref{sec:eval}): real people asking real questions, not image descriptions.}{$\geq$60 turns, $\geq$8 speakers, all stress categories covered.}{--}{P0}{--}
+\exprow{E-INF-3}{Kaggle T4 notebook that runs the same harness, giving the GPU baseline with no code changes.}{Laptop vs T4 table for every stage.}{G}{P0}{--}
+\exprow{E-INF-4}{Acoustic loopback: play the turn from device~1, record user audio and system output on device~2, and compute \ttfa\ from waveforms.}{Gap between acoustic and software \ttfa\ $<$100\,ms, or explain it.}{C}{P1}{--}
+\bottomrule
+\end{longtable}
+\endgroup
+
+\subsection{Endpointing and turn-taking}
+The endpoint wait is pure waiting and is the one cost that no amount of GPU removes.
+\begingroup\footnotesize
+\begin{longtable}{@{}L{1.45cm}L{5.7cm}L{4.2cm}L{1.0cm}cL{1.5cm}@{}}
+\exphead
+\exprow{E-EP-1}{Sweep silence hangover 300--1200\,ms on the conversational test set. Our monologue data suggest $\geq$700\,ms is needed, but questions are probably shorter and more fluent.}{False cut-off rate vs added latency curve; choose the knee.}{C}{P0}{--}
+\exprow{E-EP-2}{Silero VAD vs TEN VAD: time from the true speech offset to the VAD ``silence'' decision.}{Offset delay (ms), false alarms in noise.}{C}{P1}{50--150 ms}
+\exprow{E-EP-3}{Fine-tune Smart Turn v3 on Amharic. Positives are true utterance ends; negatives are internal pauses $\geq$200\,ms (WAXAL gives thousands of both). The measured baseline marks 84\% of mid-turn pauses as ``complete''.}{Mid-pause false-complete $<$10\%, end recall $>$90\%; allows 200--300\,ms hangover.}{G (train), C}{P0}{300--500 ms}
+\exprow{E-EP-4}{Text-side completion cue: Amharic is verb-final (SOV), so a partial transcript ending in a finite verb or copula (\am{ነው}, \am{ናት}, \am{ነበር}, \am{ይችላል}, question forms) is likely complete. Combine with the acoustic score.}{Same metrics as E-EP-3; cost $<$5\,ms.}{C}{P1}{100--300 ms}
+\exprow{E-EP-5}{Speculative turn end: at the first pause $\geq$250\,ms, finalise ASR and start LLM prefill and first-chunk generation; commit at the real endpoint, discard if the user resumes.}{\ttfa\ gain; wasted-compute rate; no audio may play before commit.}{C,G}{P0}{up to the full hangover}
+\exprow{E-EP-6}{Adaptive hangover: shorter after a completed question (rising pitch, question particle), longer after a hesitation (\am{እ\dots}, lengthened vowel).}{False cut-offs at a lower mean wait.}{C}{P2}{100--200 ms}
+\bottomrule
+\end{longtable}
+\endgroup
+
+\subsection{Speech recognition}
+\begingroup\footnotesize
+\begin{longtable}{@{}L{1.45cm}L{5.7cm}L{4.2cm}L{1.0cm}cL{1.5cm}@{}}
+\exphead
+\exprow{E-ASR-3}{CTC models on \emph{short} turns: MMS-300M-WAXAL, Ethio-ASR w2v-BERT (600M), OmniASR-CTC-300M-WAXAL. Unlike Whisper, cost scales with audio length, with no fixed 30\,s window.}{WER/CER and latency on 2--8\,s turns; int8 on CPU, fp16 on T4.}{C,G}{P0}{2--4\,s on CPU}
+\exprow{E-ASR-4}{Streaming CTC: run the encoder on 1\,s chunks with left context \emph{while the user speaks}, so only the last chunk remains after the endpoint.}{Post-endpoint ASR latency (target $<$150\,ms CPU); WER penalty vs offline.}{C,G}{P0}{most of ASR}
+\exprow{E-ASR-5}{Shrink Whisper's fixed 30\,s encoder window for short turns (whisper.cpp \code{--audio-ctx}, or truncated positional context).}{Encoder time (3.8\,s $\rightarrow$ ?) and WER on turns $<$8\,s.}{C}{P1}{1--3\,s on CPU}
+\exprow{E-ASR-6}{ONNX Runtime / OpenVINO int8 export of the CTC finalist (OpenVINO targets Intel CPUs like ours).}{RTF vs PyTorch dynamic int8.}{C}{P1}{30--60\%}
+\exprow{E-ASR-7}{Qwen3-ASR-0.6B-Amharic with native 2\,s-chunk streaming on the T4.}{Post-endpoint latency, WER vs CTC finalist.}{G}{P1}{--}
+\exprow{E-ASR-8}{Robustness of finalists: additive noise at 20/10/5\,dB SNR, speed 0.85$\times$/1.15$\times$, names, numbers, code-switching.}{WER/CER per condition; no latency change expected.}{C,G}{P0}{quality}
+\exprow{E-ASR-9}{Name and term biasing: CTC beam search with a small KenLM n-gram plus a hotword list (Ethiopian names, places, local terms).}{Entity accuracy vs added decode time.}{C}{P2}{quality}
+\exprow{E-ASR-10}{Whisper with an Amharic-extended vocabulary (fine-tune): cuts decode steps about 4--7$\times$ (Section~\ref{sec:m-tok}).}{Decoder ms/utterance, WER.}{G}{P2}{1--2 s}
+\bottomrule
+\end{longtable}
+\endgroup
+
+\subsection{Response generation}
+\begingroup\footnotesize
+\begin{longtable}{@{}L{1.45cm}L{5.7cm}L{4.2cm}L{1.0cm}cL{1.5cm}@{}}
+\exphead
+\exprow{E-LLM-2}{Model ladder on the T4: Amharic-Llama-1B, Gemma~4 E2B and E4B, Gemma~3 4B/12B, Qwen3.5-Amharic-4B (thinking off).}{TTFT, time-to-first-clause, tok/s, plus 1--5 human ratings (relevance, fluency, correctness) on 30 questions.}{G}{P0}{quality}
+\exprow{E-LLM-3}{Prompt caching of the system prompt and dialogue history (already 1.5\,s $\rightarrow$ 0.42\,s TTFT on CPU\meas).}{TTFT cold vs warm on every model.}{C,G}{P0}{0.3--1.1 s}
+\exprow{E-LLM-4}{Spoken-style prompting: ``answer first in one short sentence''; a short first clause; hard \code{max\_tokens}.}{Words in the first clause, time-to-first-clause, rating.}{C,G}{P0}{0.3--1 s}
+\exprow{E-LLM-5}{Quantisation sweep: Q8\_0, Q6\_K, Q4\_K\_M, IQ4\_XS, Q3\_K\_M for each finalist.}{tok/s, TTFT, rating.}{C,G}{P1}{20--40\%}
+\exprow{E-LLM-6}{Speculative decoding: Gemma~4 MTP head (published with the GGUFs); a 180M/400M Amharic Llama as draft for the 1B (if the vocabularies match).}{tok/s and time-to-first-clause; acceptance rate.}{C,G}{P1}{1.5--2$\times$ decode}
+\exprow{E-LLM-7}{Thread and core allocation: 2 vs 4 threads (2 is faster\meas); pin the LLM and TTS to different physical cores.}{Contention-free first-chunk TTS.}{C}{P0}{0.5--2\,s on CPU}
+\exprow{E-LLM-8}{LLM sensitivity to ASR errors: feed transcripts at WER 0/15/30/45\% and rate the answers.}{Rating vs WER curve; tells how much ASR accuracy may be traded for speed.}{G}{P1}{decision}
+\exprow{E-LLM-9}{LoRA fine-tune of the fastest acceptable model on short, factual, spoken-style Amharic QA to reduce verbosity and hallucination.}{Rating and reply length.}{G}{P2}{quality}
+\bottomrule
+\end{longtable}
+\endgroup
+
+\subsection{Speech synthesis}
+\begingroup\footnotesize
+\begin{longtable}{@{}L{1.45cm}L{5.7cm}L{4.2cm}L{1.0cm}cL{1.5cm}@{}}
+\exphead
+\exprow{E-TTS-3}{Amharic text normaliser before TTS: digits $\rightarrow$ words, Ethiopian dates and times, \am{ዓ.ም.}, abbreviations, and English words $\rightarrow$ Ge'ez transliteration (\am{ዙም}, \am{ሚቲንግ}).}{Round-trip CER on the digits sentence (46\% now) and the code-switch sentence (62\%); cost $<$5\,ms.}{C}{P0}{quality}
+\exprow{E-TTS-4}{First-chunk policy: clause boundary vs cap at 3/5/7 words vs minimum 1\,s of audio.}{\ttfa\ vs naturalness (MOS) of the first chunk.}{C,G}{P0}{0.5--2\,s CPU}
+\exprow{E-TTS-5}{MMS-TTS runtime: ONNX Runtime / OpenVINO export on CPU; fp16 on T4.}{RTF (0.57 now on CPU).}{C,G}{P1}{2$\times$}
+\exprow{E-TTS-6}{Train a Piper (VITS, ONNX) Amharic voice on one WAXAL-TTS speaker; Piper is designed for fast CPU inference.}{CPU RTF (target $<$0.15), MOS, round-trip CER.}{G (train), C}{P1}{1--2\,s CPU}
+\exprow{E-TTS-7}{OmniVoice-Amharic on the T4: diffusion steps 32/16/8, fp16, first-chunk length.}{First-chunk latency, RTF, MOS, round-trip CER.}{G}{P0}{quality}
+\exprow{E-TTS-8}{Orpheus-3B-Amharic streaming (SNAC frames) on the T4.}{Time to first audio frame; sustain RTF $<$1?}{G}{P2}{--}
+\exprow{E-TTS-9}{Pipelined synthesis of chunks 2\ldots n during playback, with an underrun check.}{Zero playback gaps at RTF under contention.}{C,G}{P1}{reliability}
+\exprow{E-TTS-10}{Cached openers: prompt the LLM to begin with one of a few fixed acknowledgements (\am{እሺ፣} \am{ጥሩ ጥያቄ ነው።}) whose audio is pre-synthesised. Confirm with the instructors whether this counts as ``valid response''.}{\ttfa\ if allowed.}{C,G}{P2}{0.5--1 s}
+\bottomrule
+\end{longtable}
+\endgroup
+
+\subsection{System, orchestration and deployment}
+\begingroup\footnotesize
+\begin{longtable}{@{}L{1.45cm}L{5.7cm}L{4.2cm}L{1.0cm}cL{1.5cm}@{}}
+\exphead
+\exprow{E-SYS-1}{Streaming orchestration (done for the first baseline): sequential $\rightarrow$ clause streaming $\rightarrow$ capped first chunk.}{25.2 $\rightarrow$ 13.0 $\rightarrow$ 9.2\,s measured with whisper-small (Section~\ref{sec:m-e2e}).}{C}{done}{--}
+\exprow{E-SYS-2}{Contention control on CPU: pause LLM decoding while the first chunk is synthesised, or raise TTS priority.}{First-chunk TTS time under load (1.4--2.5\,s, vs 1.0\,s alone).}{C}{P0}{0.5--1 s}
+\exprow{E-SYS-3}{Model residency and warm-up: all models loaded once, dummy inference at start-up, no lazy initialisation.}{Cold vs warm \ttfa.}{C,G}{P0}{first turn}
+\exprow{E-SYS-4}{Network cost: laptop client $\leftrightarrow$ Kaggle/Colab/Lightning server via tunnel; WebSocket vs WebRTC.}{RTT distribution and its share of \ttfa.}{C+G}{P0}{decision}
+\exprow{E-SYS-5}{Hybrid placement: streaming ASR on the laptop during speech, and only the text goes to the GPU for LLM+TTS.}{\ttfa\ vs all-on-GPU.}{C+G}{P1}{upload time}
+\exprow{E-SYS-6}{Concurrency on one T4: 1/2/4/8 simultaneous sessions (vLLM batching for the LLM).}{\ttfa\ p90 vs sessions; VRAM.}{G}{P1}{report}
+\exprow{E-SYS-7}{Barge-in: stop playback and cancel generation when the user speaks.}{Stop latency $<$200\,ms.}{C,G}{P2}{UX}
+\exprow{E-HC-1}{Half-cascade: Gemma~4 E2B/E4B with Amharic \emph{audio} input: (a) transcribe, (b) answer directly from audio.}{CER; answer rating; \ttfa\ with no ASR stage.}{G}{P0}{ASR stage}
+\bottomrule
+\end{longtable}
+\endgroup
+
+\setlength{\tabcolsep}{6pt}
+\subsection{The first twelve, in order}
+Ordered by expected \ttfa\ gain per hour of work, with prerequisites first:
+\begin{enumerate}
+  \item \textbf{E-INF-2 + E-INF-1}: record the conversational test set; unify the harness.
+  \item \textbf{E-INF-3}: rerun everything on a Kaggle T4, giving the second baseline.
+  \item \textbf{E-ASR-3 + E-ASR-4}: CTC ASR, then streaming CTC. This removes the largest CPU term (ASR, 61\% of \ttfa\ in mode C).
+  \item \textbf{E-TTS-3}: text normaliser (a quality gate; needed before any MOS test).
+  \item \textbf{E-SYS-2 + E-LLM-7}: CPU contention control and core pinning.
+  \item \textbf{E-TTS-4}: first-chunk policy.
+  \item \textbf{E-EP-1}: hangover sweep on real questions.
+  \item \textbf{E-LLM-2 + E-LLM-3 + E-LLM-4}: model ladder with caching and spoken-style prompts (quality decision).
+  \item \textbf{E-HC-1}: Gemma~4 audio-in check (one notebook cell; could remove ASR).
+  \item \textbf{E-TTS-7}: OmniVoice-Amharic speed and quality on the T4.
+  \item \textbf{E-EP-5}: speculative turn end.
+  \item \textbf{E-EP-3}: Amharic Smart Turn fine-tune.
+\end{enumerate}

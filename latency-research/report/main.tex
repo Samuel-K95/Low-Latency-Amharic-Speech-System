@@ -1,0 +1,145 @@
+% Week 6 — Low-Latency Amharic Speech-to-Speech: research, CPU baseline, bottlenecks, experiment programme
+% Build:  cd Week-6/report && lualatex main && lualatex main   (needs luaotfload; see README.md)
+\documentclass[11pt,a4paper]{article}
+
+% ---------- language & fonts (Ge'ez script switches font automatically) ----------
+\usepackage[english]{babel}
+\babelprovide[import, onchar=ids fonts]{amharic}
+\babelfont{rm}[Path=/usr/share/fonts/truetype/noto/, Extension=.ttf, UprightFont=*-Regular, BoldFont=*-Bold, ItalicFont=*-Italic, BoldItalicFont=*-Bold]{NotoSerif}
+\babelfont{sf}[Path=/usr/share/fonts/truetype/noto/, Extension=.ttf, UprightFont=*-Regular, BoldFont=*-Bold, ItalicFont=*-Regular, BoldItalicFont=*-Bold, ItalicFeatures={FakeSlant=0.18}, BoldItalicFeatures={FakeSlant=0.18}]{NotoSans}
+\babelfont{tt}[Path=/usr/share/fonts/truetype/noto/, Extension=.ttf, UprightFont=*-Regular, Scale=0.84]{NotoSansMono}
+\babelfont[amharic]{rm}[Path=/usr/share/fonts/truetype/noto/, Extension=.ttf, UprightFont=*-Regular, BoldFont=*-Bold, ItalicFont=*-Regular, BoldItalicFont=*-Bold, ItalicFeatures={FakeSlant=0.18}, BoldItalicFeatures={FakeSlant=0.18}]{NotoSerifEthiopic}
+\babelfont[amharic]{sf}[Path=/usr/share/fonts/truetype/noto/, Extension=.ttf, UprightFont=*-Regular, BoldFont=*-Bold, ItalicFont=*-Regular, BoldItalicFont=*-Bold, ItalicFeatures={FakeSlant=0.18}, BoldItalicFeatures={FakeSlant=0.18}]{NotoSansEthiopic}
+
+% ---------- layout ----------
+\usepackage[a4paper, margin=2.3cm, headheight=14pt]{geometry}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\setlist{itemsep=2pt, topsep=4pt, parsep=0pt}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+
+% ---------- tables, figures, maths ----------
+\usepackage{booktabs, tabularx, longtable, array, multirow, makecell}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{caption}
+\captionsetup{font=small, labelfont=bf, labelsep=period}
+\usepackage{float}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18, every axis/.append style={/pgf/number format/assume math mode=true, /pgf/number format/1000 sep={}}}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc, fit, backgrounds, shapes.geometric, decorations.pathreplacing}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\setlength{\emergencystretch}{3em}
+
+% ---------- colour tokens (validated categorical palette, light surface) ----------
+\definecolor{surface}{HTML}{FCFCFB}
+\definecolor{ink}{HTML}{0B0B0B}
+\definecolor{ink2}{HTML}{52514E}
+\definecolor{muted}{HTML}{8A8983}
+\definecolor{rule}{HTML}{E3E2DE}
+\definecolor{s1}{HTML}{2A78D6}  % blue    — endpointing
+\definecolor{s2}{HTML}{EB6834}  % orange  — ASR
+\definecolor{s3}{HTML}{1BAF7A}  % aqua    — LLM
+\definecolor{s4}{HTML}{EDA100}  % yellow  — TTS
+\definecolor{s5}{HTML}{E87BA4}  % magenta — other
+\definecolor{accent}{HTML}{1C5CAB}
+\definecolor{good}{HTML}{0E7C3A}
+\definecolor{warnc}{HTML}{A15C00}
+\definecolor{bad}{HTML}{B42318}
+
+\hypersetup{colorlinks=true, linkcolor=accent, urlcolor=accent, citecolor=accent,
+  pdftitle={Week 6: Low-Latency Amharic Speech-to-Speech}, pdfauthor={Biruk Ayalew}}
+
+\titleformat{\section}{\sffamily\Large\bfseries\color{ink}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\sffamily\large\bfseries\color{ink}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\sffamily\normalsize\bfseries\color{ink2}}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\sffamily\small\color{ink2} Week 6 — Low-Latency Amharic Speech-to-Speech}
+\fancyhead[R]{\sffamily\small\color{ink2} \thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+% ---------- boxes & helpers ----------
+\newtcolorbox{finding}[1][]{enhanced, colback=white, colframe=s1, boxrule=0.6pt, leftrule=3pt,
+  arc=2pt, left=6pt, right=6pt, top=4pt, bottom=4pt, fonttitle=\sffamily\bfseries\small,
+  coltitle=ink, colbacktitle=white, title={#1}, attach title to upper={\ \ }, before skip=6pt, after skip=6pt}
+\newtcolorbox{caveat}[1][]{enhanced, colback=white, colframe=warnc, boxrule=0.6pt, leftrule=3pt,
+  arc=2pt, left=6pt, right=6pt, top=4pt, bottom=4pt, fonttitle=\sffamily\bfseries\small,
+  coltitle=ink, title={#1}, attach title to upper={\ \ }, before skip=6pt, after skip=6pt}
+\newtcolorbox{keybox}{enhanced, colback=surface, colframe=rule, boxrule=0.5pt, arc=2pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt, before skip=6pt, after skip=8pt}
+
+\newcommand{\meas}{\textsuperscript{\sffamily\color{good}\,M}}   % measured in this report
+\newcommand{\lit}{\textsuperscript{\sffamily\color{ink2}\,L}}    % taken from literature / model card
+\newcommand{\proj}{\textsuperscript{\sffamily\color{warnc}\,P}}  % projection / estimate
+\newcommand{\ttfa}{\ensuremath{T_{\mathrm{TTFA}}}}
+\newcommand{\ms}{\,ms}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\am}[1]{#1}   % Amharic text: babel switches the font automatically
+\newcommand{\hf}[1]{\href{https://huggingface.co/#1}{\nolinkurl{#1}}}
+\newcommand{\hfl}[2]{\href{https://huggingface.co/#1}{#2}}   % linked readable model name
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\renewcommand{\arraystretch}{1.15}
+
+\begin{document}
+
+% ================= TITLE =================
+\begin{titlepage}
+\sffamily
+\vspace*{1.5cm}
+{\color{ink2}\large AI/ML Residency — Week 6 of 7\par}
+\vspace{0.4cm}
+{\color{ink}\fontsize{26}{31}\selectfont\bfseries Low-Latency Amharic\\[2pt] Speech-to-Speech\par}
+\vspace{0.3cm}
+{\color{ink2}\Large How the state of the art works, a measured CPU baseline,\\ where the time goes, and what to try next\par}
+\vspace{1.2cm}
+{\color{ink}\large Biruk Ayalew\par}
+{\color{ink2} 25 September 2026\par}
+\vspace{1.4cm}
+\begin{keybox}
+\rmfamily
+\textbf{Central question.} How can the End-to-End Time to First Audio (\ttfa) of an Amharic
+speech-to-speech assistant be minimised while keeping recognition, response quality and
+speech naturalness acceptable?\par\smallskip
+\textbf{Constraints for this work.} Open-weight, self-hosted models only (no hosted speech or LLM APIs);
+compute is a 2016 laptop CPU (Intel i5-6300U, 2 cores / 4 threads, AVX2, 15\,GB RAM) plus free GPU notebooks
+(Kaggle, Colab, and others surveyed in Section~\ref{sec:compute}).\par\smallskip
+\textbf{How to read the numbers.} \meas\ = measured for this report on the laptop CPU;
+\lit\ = from a paper or model card; \proj\ = projection that still has to be measured.
+\end{keybox}
+\vfill
+{\color{ink2}\small Everything measured here can be reproduced from \texttt{Week-6/smoke/} (Appendix~\ref{app:repro}).\par}
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+
+\input{sections/00_summary}
+\input{sections/01_problem}
+\input{sections/02_how_it_works}
+\input{sections/03_amharic}
+\input{sections/04_components}
+\input{sections/05_compute}
+\input{sections/06_measurements}
+\input{sections/07_bottlenecks}
+\input{sections/08_baseline}
+\input{sections/09_experiments}
+\input{sections/10_evaluation}
+\input{sections/11_plan}
+\input{sections/12_risks}
+\input{sections/13_references}
+\appendix
+\input{sections/14_appendix}
+
+\end{document}

@@ -1,0 +1,290 @@
+\section{Measurements on the laptop CPU}
+\label{sec:measure}
+
+\subsection{Setup}
+\begin{itemize}
+  \item \textbf{Hardware:} Intel Core i5-6300U (Skylake, 2 cores / 4 threads, 2.4\,GHz, AVX2, no AVX-512/VNNI), 16\,GB RAM, no GPU.
+  \item \textbf{Software:} Python 3.12, PyTorch 2.13 (CPU), transformers 5.15, CTranslate2 4.8.2 (faster-whisper 1.2.1),
+  ONNX Runtime 1.30, llama.cpp build b11179, uroman 1.3.1, jiwer 4.0.
+  \item \textbf{ASR dev data:} 30 utterances from the WAXAL Amharic test split, spread across the split
+  with at most 2 per speaker (19 speakers, both genders, 519\,s, median 16.9\,s).
+  \item \textbf{End-to-end turns:} 5 Amharic questions (Appendix~\ref{app:turns}), synthesised with MMS-TTS
+  and padded with 0.3\,s of leading and 1.5\,s of trailing silence (2.9--4.4\,s of speech).
+  \item \textbf{Normalisation:} all WER/CER numbers use \code{am\_text.normalize} (NFC, punctuation removed,
+  homophone rows folded).
+\end{itemize}
+
+\subsection{Tokenizer cost of Amharic}
+\label{sec:m-tok}
+We encoded 3{,}000 random sentences from the Week-4 Amharic news corpus (14.3 words per sentence on
+average) and the 30 WAXAL transcripts with each candidate's tokenizer.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  xbar, width=0.82\textwidth, height=6.2cm, bar width=9pt,
+  xmin=0, xmax=14.5, xlabel={Tokens per Amharic word (news sentences)},
+  symbolic y coords={Llama-3.2-1B-Amharic,Gemma 3 / Gemma 4,Qwen3 / Qwen3-ASR,Qwen3.5,Phi-4-mini,Llama 3.2 base,Whisper},
+  ytick=data, y dir=reverse, enlarge y limits=0.1,
+  axis line style={draw=ink2}, tick style={draw=none}, yticklabel style={font=\sffamily\small, text=ink},
+  xticklabel style={font=\sffamily\scriptsize, text=ink2}, xlabel style={font=\sffamily\small, text=ink2},
+  xmajorgrids, grid style={draw=rule}, axis x line*=bottom, axis y line*=left,
+  nodes near coords, nodes near coords style={font=\sffamily\scriptsize, text=ink, anchor=west},
+  every node near coord/.append style={/pgf/number format/fixed, /pgf/number format/precision=2},
+]
+\addplot[fill=s1, draw=none, rounded corners=0pt] coordinates {
+  (1.70,Llama-3.2-1B-Amharic) (3.26,Gemma 3 / Gemma 4) (6.48,Qwen3 / Qwen3-ASR) (7.08,Qwen3.5)
+  (9.14,Phi-4-mini) (12.18,Llama 3.2 base) (12.22,Whisper)};
+\end{axis}
+\end{tikzpicture}
+\caption{Tokens per Amharic word\meas. English costs 1.1--1.2 tokens per word with all of these
+tokenizers, so Amharic is 1.4$\times$ (extended-vocabulary Llama) to 10.3$\times$ (Whisper, Llama base)
+more expensive. On the WAXAL speech transcripts the numbers are 3--12\% lower but in the same order.}
+\label{fig:fertility}
+\end{figure}
+
+\begin{finding}[Finding 1 — the tokenizer is a latency decision]
+A 30-word Amharic answer costs 51 decode steps with the Amharic Llama, 98 with Gemma, 194 with Qwen3
+and 365 with base Llama. The same holds for ASR: the WAXAL Whisper models emit 18.6 tokens per second of
+audio (Table~\ref{tab:asr-meas}), so a 5\,s question needs about 45 sequential decoder steps. This
+explains why every Whisper variant is slow here, and why CTC is attractive.
+\end{finding}
+
+\subsection{Speech recognition}
+\label{sec:m-asr}
+\begin{table}[H]
+\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lllrrrrr@{}}
+\toprule
+\textbf{Model} & \textbf{Runtime} & \textbf{Dec.} & \textbf{WER} & \textbf{CER} & \textbf{Latency med/p90 (s)} & \textbf{RTF} & \textbf{Turn (s)} \\
+\midrule
+Whisper-tiny-WAXAL & HF fp32 & AR & 38.7 & 18.3 & 7.82 / 8.99 & 0.45 & -- \\
+Whisper-tiny-WAXAL & CT2 int8 & AR & 38.9 & 19.0 & \textbf{3.03} / 3.59 & \textbf{0.18} & \textbf{1.0} \\
+Whisper-small-WAXAL & HF fp32$^\dagger$ & AR & 27.6 & 11.6 & 37.9 / 40.9 & 2.17 & -- \\
+Whisper-small-WAXAL & CT2 int8 & AR & \textbf{29.4} & 13.0 & 14.57 / 16.58 & 0.84 & 5.6 \\
+MMS-300M-WAXAL & HF fp32 & CTC & 31.4 & \textbf{12.7} & 10.79 / 20.43 & 0.63 & 2.4 \\
+MMS-300M-WAXAL & + dynamic int8 & CTC & 33.7 & 13.4 & 15.56 / 19.88 & 0.91 & -- \\
+\bottomrule
+\end{tabular}
+\caption{ASR on 30 WAXAL test utterances (median 16.9\,s) on the laptop, 4 threads, greedy decoding\meas.
+HF = Hugging Face transformers. ``Turn'' is the median ASR time inside the end-to-end runs (2.9--4.4\,s questions).
+$^\dagger$Only 8 utterances (too slow for the full set).}
+\label{tab:asr-meas}
+\end{table}
+
+\begin{finding}[Finding 2 — what the ASR numbers say]
+\textbf{(a)} CTranslate2 int8 is 2.6$\times$ faster than HF fp32 for Whisper, with no accuracy loss.
+\textbf{(b)} Whisper-small and MMS-300M-CTC are equally accurate (CER 13.0 vs 12.7), but on short turns
+CTC is 2.3$\times$ faster (2.4\,s vs 5.6\,s). The reason is that Whisper always encodes a padded 30\,s
+window: for a 5\,s question the encoder alone takes 3.8\,s (small) or 0.55\,s (tiny), and the decoder adds
+1.9\,s (38\,ms per token $\times$ 45 tokens)\meas. \textbf{(c)} PyTorch dynamic int8 \emph{slows} the CTC
+model down on this CPU (RTF 0.63 $\rightarrow$ 0.91) and costs 2.3 WER points: without VNNI, int8
+matrix multiplies do not pay off. Try ONNX Runtime / OpenVINO instead (E-ASR-6).
+\end{finding}
+
+\begin{caveat}[Pitfall found: faster-whisper truncates Amharic]
+faster-whisper caps generation at 448 positions, and CTranslate2's Whisper \code{generate()} returned
+only \code{max\_length}/2 tokens. As a result, \emph{every} transcript stopped at 224 tokens
+($\approx$18 Amharic words), and WER looked like 57\% instead of 39\%. We bypass it by calling
+\code{generate(max\_length=880)} directly (\code{smoke/asr\_bench.py}). Any team using faster-whisper
+for Amharic should check for this.
+\end{caveat}
+
+\subsection{Endpointing}
+\label{sec:m-endpoint}
+Silero VAD (ONNX, 1 thread) costs \textbf{0.22\,ms per 32\,ms frame}\meas: 0.8\% of real time, which is
+negligible. The problem is deciding \emph{when} the user is done. Inside the 30 WAXAL utterances we found
+7.1 internal pauses per utterance, with pause lengths p50 = 160\,ms, p90 = 480\,ms and p99 = 892\,ms\meas.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.62\textwidth, height=5.2cm, xmin=150, xmax=1050, ymin=0, ymax=2.6,
+  xlabel={Silence hangover before declaring end of turn (ms)}, ylabel={Premature cut-offs per utterance},
+  xtick={200,300,500,700,1000}, ytick={0,0.5,1,1.5,2,2.5},
+  axis line style={draw=ink2}, tick style={draw=none}, ymajorgrids, grid style={draw=rule},
+  xticklabel style={font=\sffamily\scriptsize, text=ink2}, yticklabel style={font=\sffamily\scriptsize, text=ink2},
+  xlabel style={font=\sffamily\small, text=ink2}, ylabel style={font=\sffamily\small, text=ink2},
+  axis x line*=bottom, axis y line*=left,
+  nodes near coords, point meta=explicit symbolic, nodes near coords style={font=\sffamily\scriptsize, text=ink, anchor=south west},
+]
+\addplot[s1, line width=2pt, mark=*, mark size=3pt, mark options={fill=s1, draw=white, line width=1pt}]
+  coordinates {(200,2.30)[2.30] (300,1.53)[1.53] (500,0.53)[0.53] (700,0.27)[0.27] (1000,0.03)[0.03]};
+\end{axis}
+\end{tikzpicture}
+\caption{How often a pure-silence endpointer would cut a speaker off mid-utterance, as a function of
+the hangover\meas. Data: 30 spontaneous WAXAL utterances, averaging 17\,s. Shorter conversational
+questions will have fewer pauses (E-EP-1).}
+\label{fig:hangover}
+\end{figure}
+
+We then tested \textbf{Smart Turn v3.2} (CPU ONNX) at the true end of each utterance and at each of
+69 internal pauses of at least 200\,ms. It returned P(complete) with a median of 0.94 at true ends,
+\emph{but 0.95 at mid-utterance pauses}: 84\% of internal pauses were classified as ``turn complete''\meas.
+Each call took 120\,ms on this CPU (the authors report 12\,ms on modern CPUs~\cite{smartturn}).
+
+\begin{finding}[Finding 3 — endpointing is a first-class bottleneck]
+With silence only, a safe hangover for spontaneous Amharic is 700--1000\,ms of pure waiting. That is
+already more than an entire English voice agent's LLM budget. The off-the-shelf semantic detector does
+not understand Amharic. An Amharic end-of-turn model (E-EP-3, E-EP-4) and speculative turn-ending
+(E-EP-5) are therefore among the highest-value experiments, and they help equally on CPU and GPU.
+\end{finding}
+
+\subsection{Response generation}
+\label{sec:m-llm}
+Model: \hf{rasyosef/Llama-3.2-1B-Amharic-Instruct}, GGUF Q4\_K\_M (825\,MB), llama.cpp server,
+context 2{,}048, temperature 0.3.
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{llama-bench} & \textbf{2 threads} & \textbf{4 threads} \\
+\midrule
+Prompt processing, 128 / 512 tokens (tok/s) & 46.0 / 45.3 & 45.2 / 45.5 \\
+Generation, 64 tokens (tok/s) & \textbf{14.2} & 12.8 \\
+\bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Streaming, 5 questions (median)} & \textbf{cold} & \textbf{warm} \\
+\midrule
+Prompt tokens / prefill (ms) & 61 / 1{,}490 & 11 / 396 \\
+Time to first token (ms) & 1{,}504 & \textbf{416} \\
+Time to first clause (ms) & 2{,}584 & \textbf{1{,}378} \\
+Tokens per word of replies & \multicolumn{2}{c}{1.6} \\
+\bottomrule
+\end{tabular}
+\caption{LLM on the laptop CPU\meas. ``Warm'' = system prompt cached in the KV cache, question not
+cached. Hyper-threading hurts decoding (2 threads beat 4).}
+\label{tab:llm-meas}
+\end{table}
+
+\begin{finding}[Finding 4 — the LLM is fast enough on CPU, but not good enough]
+At 14 tokens/s and 1.6 tokens per word, the 1B Amharic model generates about 8 words/s, faster than
+speech, and prompt caching cuts TTFT from 1.5\,s to 0.42\,s. \textbf{Quality is the limit}: replies are
+fluent Amharic but often wrong or off-topic. Examples: it claimed coffee is ``4--5\% salt'', put
+``pizza'' in a coffee answer, and after an ASR error answered that Ethiopia's capital is ``Manhattan''.
+It also ignores the ``one or two sentences'' instruction (up to 82 words). Relevance, not speed,
+decides the LLM (E-LLM-2).
+\end{finding}
+
+\subsection{Speech synthesis}
+\label{sec:m-tts}
+\begin{table}[H]
+\centering\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{Sentence} & \textbf{Words} & \textbf{Audio (s)} & \textbf{Synthesis (ms)} & \textbf{RTF} & \textbf{Round-trip CER} \\
+\midrule
+greeting & 4 & 2.94 & 1{,}536 & 0.52 & 5.0\% \\
+capital & 6 & 4.13 & 2{,}246 & 0.54 & 4.2\% \\
+weather & 12 & 6.91 & 3{,}920 & 0.57 & 12.8\% \\
+museum hours (Ethiopian time) & 12 & 5.76 & 3{,}380 & 0.59 & 16.7\% \\
+names and places & 18 & 10.75 & 6{,}195 & 0.58 & 22.0\% \\
+digits and date & 9 & 3.81 & 2{,}121 & 0.56 & \textcolor{bad}{\textbf{46.2\%}} \\
+code-switching & 12 & 5.42 & 3{,}094 & 0.57 & \textcolor{bad}{\textbf{62.5\%}} \\
+\bottomrule
+\end{tabular}
+\caption{MMS-TTS (VITS, 36M parameters, 16\,kHz) on the laptop, 2 threads, median of 3 runs\meas. Round-trip
+CER = CER of Whisper-small-WAXAL transcribing the synthesised audio (lower is more intelligible). 4 threads
+gave no gain (RTF 0.59). Loading takes 9.8\,s, and the first call is slower (lazy initialisation).}
+\label{tab:tts-meas}
+\end{table}
+
+\begin{finding}[Finding 5 — TTS: short first chunks and text normalisation]
+VITS cost is linear in output length (RTF $\approx$ 0.57), so the first audio of a 4-word chunk takes
+about 1.5\,s and a whole 40-word reply about 14\,s. Chunking is therefore mandatory on CPU. The digits
+``15'' and ``2019'' are silently dropped (the romanised vocabulary has no digits), and English words
+come out unintelligible (``Zoom'' $\rightarrow$ \am{በጾም}). A normaliser is required (E-TTS-3).
+\end{finding}
+
+\subsection{End-to-end baseline}
+\label{sec:m-e2e}
+The harness (\code{smoke/e2e\_baseline.py}) streams each user turn through Silero VAD with a 700\,ms
+hangover, transcribes up to the endpoint, streams the LLM, and synthesises in one of three modes:
+\textbf{A} sequential (whole reply), \textbf{B} first clause (first clause mark after $\geq$2 words),
+\textbf{C} first clause \emph{or} 5 words, whichever comes first. In B and C the LLM keeps generating in
+parallel while the first chunk is synthesised, so the two compete for the same 2 cores, as they would in
+a real system. LLM: 2 threads; TTS: 2 threads.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  xbar stacked, width=0.80\textwidth, height=7.6cm, bar width=11pt,
+  xmin=0, xmax=28, xlabel={Seconds after the user stops speaking (stage medians)},
+  symbolic y coords={A,B,C,D,E,F,G}, ytick=data, y dir=reverse, enlarge y limits=0.09,
+  yticklabels={{Whisper-S, sequential (A)}, {Whisper-S, clause (B)}, {Whisper-S, 5-word cap (C)},
+               {Whisper-T, clause (B)}, {Whisper-T, 5-word cap (C)}, {MMS-CTC, clause (B)}, {MMS-CTC, 5-word cap (C)}},
+  yticklabel style={font=\sffamily\small, text=ink}, xticklabel style={font=\sffamily\scriptsize, text=ink2},
+  xlabel style={font=\sffamily\small, text=ink2}, axis line style={draw=ink2}, tick style={draw=none},
+  xmajorgrids, grid style={draw=rule}, axis x line*=bottom, axis y line*=left,
+  legend style={font=\sffamily\scriptsize, draw=none, fill=none, at={(0.5,1.02)}, anchor=south, legend columns=4, text=ink},
+  legend image code/.code={\fill[#1] (0cm,-0.08cm) rectangle (0.35cm,0.14cm);},
+]
+\addplot[fill=s1, draw=white, line width=1pt] coordinates {(0.70,A) (0.70,B) (0.70,C) (0.70,D) (0.70,E) (0.70,F) (0.70,G)};
+\addplot[fill=s2, draw=white, line width=1pt] coordinates {(5.59,A) (5.72,B) (5.59,C) (1.03,D) (1.02,E) (2.34,F) (2.41,G)};
+\addplot[fill=s3, draw=white, line width=1pt] coordinates {(4.83,A) (1.64,B) (0.72,C) (1.02,D) (0.99,E) (1.69,F) (0.91,G)};
+\addplot[fill=s4, draw=white, line width=1pt] coordinates {(14.11,A) (5.17,B) (2.52,C) (1.96,D) (2.58,E) (5.72,F) (2.33,G)};
+\legend{Endpoint wait, ASR, LLM to first chunk, TTS of first chunk}
+\end{axis}
+\end{tikzpicture}
+\caption{Where the time goes, per configuration (medians of each stage over 5 turns)\meas. Whisper-S /
+Whisper-T = Whisper small / tiny WAXAL (CT2 int8); MMS-CTC = MMS-300M-WAXAL (fp32); LLM = Amharic Llama 1B
+Q4\_K\_M; TTS = MMS-TTS. Median \ttfa\ per row is given in Table~\ref{tab:e2e}.}
+\label{fig:e2e}
+\end{figure}
+
+\begin{table}[H]
+\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}llrrrY@{}}
+\toprule
+\textbf{ASR} & \textbf{Mode} & \textbf{\ttfa\ median (s)} & \textbf{p90 (s)} & \textbf{min--max (s)} & \textbf{Largest stage} \\
+\midrule
+Whisper-small & A sequential & 25.2 & 46.3 & 7.2--50.6 & TTS of whole reply (14.1\,s) \\
+Whisper-small & B clause & 13.0 & 17.5 & 9.4--18.7 & ASR (5.7\,s), TTS (5.2\,s) \\
+Whisper-small & C 5-word cap & 9.2 & 10.6 & 8.7--10.8 & ASR (5.6\,s) \\
+Whisper-tiny & B clause & \textbf{4.4} & 9.2 & 4.2--11.7 & TTS (2.0\,s) \\
+Whisper-tiny & C 5-word cap & 5.4 & 6.4 & 4.0--6.4 & TTS (2.6\,s) \\
+MMS-300M CTC & B clause & 10.8 & 15.2 & 4.5--16.4 & TTS (5.7\,s) \\
+MMS-300M CTC & C 5-word cap & \textbf{5.9} & \textbf{6.8} & 4.4--6.8 & ASR (2.4\,s), TTS (2.3\,s) \\
+\bottomrule
+\end{tabularx}
+\caption{End-to-end \ttfa\ on the laptop CPU, 5 turns per row\meas. Whisper-tiny is the fastest, but on
+these turns its CER is 22.0\%, against 15.6\% for MMS-300M-CTC and 14.7\% for Whisper-small
+(Appendix~\ref{app:turns}). That matches the WAXAL ranking, so MMS-300M-CTC with the 5-word cap is the
+best \emph{usable} CPU configuration so far.}
+\label{tab:e2e}
+\end{table}
+
+\begin{finding}[Finding 6 — streaming gives 2.7$\times$, the CTC swap another 1.6$\times$]
+With the \emph{same three models} on the \emph{same laptop}, sequential processing takes 25.2\,s median
+and streaming with a capped first chunk takes 9.2\,s. Swapping Whisper-small for a CTC model of equal
+accuracy brings it to 5.9\,s (4.3$\times$ better than the sequential baseline). Clause-only chunking (B)
+has a long tail: when the model's first sentence is long, synthesising it while the LLM is still decoding
+takes 5--11\,s. The cap (C) removes that tail (p90 15.2 $\rightarrow$ 6.8\,s).
+\end{finding}
+
+\subsection{Resources}
+\begin{center}\small
+\begin{tabular}{@{}lrl@{}}
+\toprule
+\textbf{Component (loaded, after one inference)} & \textbf{RSS} & \textbf{Load time} \\
+\midrule
+Whisper-tiny-WAXAL, CT2 int8 & 129\,MB & $<$1\,s \\
+Whisper-small-WAXAL, CT2 int8 & 551\,MB & $<$1\,s \\
+MMS-300M-WAXAL CTC, fp32 & 1{,}602\,MB & 6.7\,s \\
+MMS-TTS (VITS) & 167\,MB & 9.8\,s (incl.\ uroman) \\
+llama.cpp server, 1B Q4\_K\_M, 2k context & 1{,}457\,MB & 2.9\,s \\
+\midrule
+Full CPU pipeline (CTC + LLM + TTS) & $\approx$3.2\,GB & 13\,s \\
+\bottomrule
+\end{tabular}
+\end{center}
+The whole pipeline fits comfortably in 16\,GB of RAM; memory is not a constraint on the CPU path.
+Compute (2 physical cores shared by three models) is the constraint.

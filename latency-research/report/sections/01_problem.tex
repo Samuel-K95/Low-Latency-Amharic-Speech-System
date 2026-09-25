@@ -1,0 +1,80 @@
+\section{The problem and the metric}
+\label{sec:problem}
+
+\subsection{What the assignment asks for}
+The system listens to a user speaking Amharic, understands the request, produces a suitable
+answer and speaks it back in Amharic. The engineering target is not \emph{whether} this works but
+\emph{how fast it starts answering}. Accuracy, pronunciation, naturalness, robustness and
+relevance are quality \emph{constraints}; latency is the \emph{objective}. Week~6 is for building a
+complete baseline, measuring every stage, and finding the bottlenecks. Week~7 is for
+removing them, with every change measured against the baseline.
+
+\subsection{End-to-End Time to First Audio}
+\label{sec:ttfa}
+\begin{keybox}
+\textbf{Definition.} \ttfa\ is the time from the \emph{acoustic end of the user's speech} (the last
+voiced frame of the turn) to the \emph{first audible sample of a valid spoken response} at the
+loudspeaker. Filler sounds (``hmm'', a chime) do not count as a valid response.
+\end{keybox}
+
+For a cascaded system, \ttfa\ decomposes into stages that are either \emph{waiting} or \emph{computing}:
+\begin{equation}
+\ttfa \;=\; \underbrace{T_{\text{endpoint}}}_{\text{silence wait}}
+\;+\; \underbrace{T_{\text{ASR,final}}}_{\text{finish transcript}}
+\;+\; \underbrace{T_{\text{LLM}\rightarrow\text{chunk}_1}}_{\text{prefill + first clause}}
+\;+\; \underbrace{T_{\text{TTS}}(\text{chunk}_1)}_{\text{first audio buffer}}
+\;+\; \underbrace{T_{\text{net}} + T_{\text{play}}}_{\text{transport, device buffer}}
+\label{eq:ttfa}
+\end{equation}
+Three points follow from Eq.~\eqref{eq:ttfa}. They shape everything that follows.
+\begin{enumerate}
+  \item \textbf{Only the first chunk matters.} Once the first audio is playing, the rest of the reply
+  only has to be generated faster than it is spoken (real-time factor $<1$). A system that
+  streams can hide most of the LLM and TTS cost behind playback.
+  \item \textbf{Waiting counts as much as computing.} $T_{\text{endpoint}}$ is pure waiting: the system
+  cannot know the user has finished until some silence has passed. In our measurements
+  (Section~\ref{sec:m-endpoint}) it is one of the largest terms.
+  \item \textbf{Work done before the endpoint is free.} Anything computed while the user is still
+  speaking (streaming ASR, speculative LLM prefill) comes off \ttfa\ entirely.
+\end{enumerate}
+
+\subsection{How to measure it (protocol used from now on)}
+\label{sec:protocol}
+\begin{itemize}
+  \item \textbf{Software timestamps.} Every stage logs \code{time.perf\_counter()} at start and end
+  into one JSON record per turn. The same record also holds the audio duration, the transcript,
+  the reply, token counts and the first-chunk text. The harness in \code{smoke/e2e\_baseline.py}
+  already does this.
+  \item \textbf{Reference end-of-speech.} For recorded test turns, the end of speech is the last frame
+  where Silero VAD probability $>0.5$. For live tests it is the same, computed offline on the
+  recorded microphone stream.
+  \item \textbf{Acoustic ground truth (Week~7).} Play the test turn from one device and record
+  \emph{both} the user audio and the system's loudspeaker output on a second recorder. \ttfa\ is
+  then the gap between the two waveforms. This captures device buffers and network, which
+  software timestamps miss.
+  \item \textbf{Statistics.} Report median, p90 and p95 over at least 30 turns, separately for
+  \emph{warm} (models loaded, caches primed) and \emph{cold} (first request) conditions. Never report a single run.
+  \item \textbf{Same inputs for every variant.} All experiments use the same frozen test turns
+  (Section~\ref{sec:eval}), so differences come from the system, not the inputs.
+\end{itemize}
+
+\subsection{What ``fast enough'' means}
+Human conversation has very short gaps between turns: across ten languages, the typical
+response gap is around 0--300\,ms~\cite{stivers2009}. Production voice agents built on hosted
+components in 2026 aim for roughly 0.6--1.2\,s end-to-end~\cite{webrtcventures2026,deepgram2026}.
+For an open-model Amharic system on free hardware, we set practical tiers:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Tier} & \textbf{\ttfa\ (median)} & \textbf{User perception}\\
+\midrule
+Excellent & $<0.8$\,s & Feels conversational \\
+Good & 0.8--1.5\,s & Clearly responsive; comparable to hosted voice agents \\
+Acceptable & 1.5--3\,s & Noticeable pause, still usable \\
+Poor & $>3$\,s & Users repeat themselves or talk over the system \\
+\bottomrule
+\end{tabular}
+\end{center}
+Realistic goals for this project: \textbf{Acceptable on the laptop CPU} and \textbf{Good on a free T4 GPU}.

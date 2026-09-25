@@ -1,0 +1,60 @@
+\section{Evaluation protocol}
+\label{sec:eval}
+
+Latency is the objective; the protocol below makes sure it is not bought with an unusable system.
+
+\subsection{Test sets}
+\begin{enumerate}
+  \item \textbf{Dev set (already built).} 30 WAXAL test utterances from 19 speakers, both genders,
+  519\,s in total (\code{smoke/audio/waxal\_amh\_test/}). These are spontaneous image descriptions,
+  which is good for ASR accuracy and pause statistics but not typical of questions.
+  \item \textbf{Conversational turn set (to record, E-INF-2).} At least 60 spoken questions, 2--8\,s each,
+  from at least 8 speakers (mixed gender, age and regional accent), recorded on laptop and phone
+  microphones at 16\,kHz. Every turn has a reference transcript and a reference ``good answer'' note.
+  Planned coverage:
+  \begin{center}\small
+  \begin{tabularx}{0.95\linewidth}{@{}L{4.6cm}rY@{}}
+  \toprule
+  \textbf{Category} & \textbf{Turns} & \textbf{Example} \\
+  \midrule
+  Everyday questions & 12 & \am{ቡና እንዴት ይፈላል?} \\
+  Ethiopian personal names & 8 & \am{አበበ በቀለ ማን ነው?} \\
+  Places and geography & 8 & \am{ከአዲስ አበባ ወደ ባህር ዳር ስንት ኪሎ ሜትር ነው?} \\
+  Numbers, dates, Ethiopian time & 8 & \am{መስከረም 15 ቀን 2019 ምን ቀን ነው?} \\
+  Local terminology (health, agriculture, services) & 8 & \am{የጤና መድን እንዴት ይገኛል?} \\
+  Amharic--English code-switching & 8 & \am{የ} bank account \am{እንዴት ልክፈት?} \\
+  Fast and slow speakers & 4+4 & same prompts, deliberately paced \\
+  \bottomrule
+  \end{tabularx}
+  \end{center}
+  \item \textbf{Noise variants.} Each turn mixed with café, street and fan noise at 20, 10 and 5\,dB SNR
+  (public-domain noise or noise recorded locally), for ASR robustness (E-ASR-8).
+  \item \textbf{Held-out final set.} A further 30 turns from speakers \emph{not} used during tuning, recorded
+  once and only used for the final report (the assignment requires previously unseen speech).
+\end{enumerate}
+
+\subsection{Metrics}
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}L{3.2cm}Y@{}}
+\toprule
+\textbf{Metric} & \textbf{Definition} \\
+\midrule
+\ttfa\ (primary) & Last voiced user frame $\rightarrow$ first audible response sample; median, p90, p95; warm and cold. \\
+Stage breakdown & $T_{\text{endpoint}}$, $T_{\text{ASR}}$ after the endpoint, LLM TTFT, LLM time-to-first-chunk, TTS first-chunk time, network. \\
+ASR WER / CER & After NFC normalisation, punctuation removal and homophone folding (\code{am\_text.py}); reported per category. \\
+ASR RTF & Processing time / audio duration; plus post-endpoint finalisation latency for streaming ASR. \\
+LLM TTFT, tok/s & From the server timings; tokens per Amharic word of actual replies. \\
+Response quality & 1--5 ratings by two native speakers for relevance, correctness and fluency on 30 questions; blind to configuration. \\
+TTS intelligibility & Round-trip CER: transcribe synthesised audio with the best ASR (already implemented). \\
+TTS naturalness & 5-point MOS from $\geq$5 native listeners on 10 sentences per system (names, numbers, code-switch included). \\
+False cut-off rate & Share of turns where the system started answering before the user had finished. \\
+Resources & Peak RSS, CPU utilisation, VRAM (\code{psutil}, \code{nvidia-smi}); model load time. \\
+Concurrency & \ttfa\ p90 at 1/2/4/8 simultaneous sessions (T4 only). \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Reporting}
+Every result table states hardware, software versions, model files (repository and quantisation),
+thread counts, the test set, and whether the numbers are warm or cold. Each final claim is backed by a
+JSON file in \code{results/} and the script that produced it.

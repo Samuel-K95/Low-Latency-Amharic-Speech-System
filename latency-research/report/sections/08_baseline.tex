@@ -1,0 +1,76 @@
+\section{Baseline definition and recommended architecture}
+\label{sec:baseline}
+
+\subsection{The official baseline}
+The assignment asks for improvement measured against a baseline, so the baseline must be fixed now and
+never edited later.
+\begin{keybox}
+\textbf{Baseline B0 (frozen 25 Sep 2026).} A straightforward, non-streaming cascade using the most
+accurate components that run on the laptop: Silero VAD with a 700\,ms hangover $\rightarrow$
+Whisper-small-WAXAL (CT2 int8) $\rightarrow$ Llama-3.2-1B-Amharic-Instruct Q4\_K\_M (llama.cpp, 2
+threads, cached system prompt) $\rightarrow$ MMS-TTS of the whole reply.
+\textbf{Measured \ttfa: 25.2\,s median, 46.3\,s p90} (5 synthetic turns; to be re-measured on the recorded
+conversational set, E-INF-2). The same configuration on a Kaggle T4 is baseline B0-GPU (E-INF-3).
+\end{keybox}
+
+Already measured improvements over B0 (same laptop):
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}L{5.6cm}rrY@{}}
+\toprule
+\textbf{Change (cumulative)} & \textbf{\ttfa\ median} & \textbf{vs B0} & \textbf{Keep?} \\
+\midrule
+B0: sequential & 25.2\,s & -- & reference \\
++ LLM streaming, TTS of the first clause (mode B) & 13.0\,s & $-48\%$ & keep streaming; first-chunk rule changed below \\
++ first chunk capped at 5 words (mode C) & 9.2\,s & $-64\%$ & keep \\
++ ASR: Whisper-small $\rightarrow$ MMS-300M CTC (equal CER) & \textbf{5.9\,s} & $\mathbf{-77\%}$ & keep (current best) \\
+\textit{Alternative:} ASR $\rightarrow$ Whisper-tiny & 5.4\,s & $-79\%$ & reject: CER 19 vs 13 (WAXAL), 22 vs 16 (turns) \\
+\textit{Tried:} dynamic int8 on the CTC model & slower & -- & reject: RTF 0.63 $\rightarrow$ 0.91 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Recommended target architecture}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[font=\sffamily\scriptsize, node distance=14mm and 6mm,
+  blk/.style={draw=ink2, rounded corners=2pt, minimum height=11mm, text width=22mm, align=center, fill=white},
+  arr/.style={-{Stealth[length=2mm]}, ink2, semithick}, note/.style={text=ink2, font=\sffamily\tiny}]
+\node[blk] (mic) {Microphone\\20\,ms PCM frames};
+\node[blk, right=of mic, fill=s1!12] (vad) {Silero VAD +\\Amharic end-of-turn\\(E-EP-3/4)};
+\node[blk, right=of vad, fill=s2!12] (asr) {Streaming CTC ASR\\runs \emph{during}\\speech};
+\node[blk, right=of asr, fill=s3!12] (llm) {LLM\\cached prompt,\\spoken style};
+\node[blk, right=of llm, fill=s4!15] (norm) {Text normaliser\\numbers, dates,\\English $\rightarrow$ fidel};
+\node[blk, below=of norm, fill=s4!15] (tts) {TTS\\first chunk $\leq$5 words,\\then clauses};
+\node[blk, left=of tts] (play) {Playback\\+ barge-in};
+\draw[arr] (mic) -- (vad); \draw[arr] (vad) -- (asr); \draw[arr] (asr) -- (llm);
+\draw[arr] (llm) -- (norm); \draw[arr] (norm) -- (tts); \draw[arr] (tts) -- (play);
+\draw[arr, dashed, s1] (vad.south) -- ++(0,-5mm) -| (llm.south);
+\node[note, anchor=north] at ($(vad.south)!0.5!(llm.south) + (0,-5.5mm)$) {speculative: early endpoint starts ASR finalise + LLM prefill};
+\end{tikzpicture}
+\caption{Target architecture: a streaming cascade in which every stage starts on partial input. The
+dashed path is speculative turn ending: work starts at the first long pause and is discarded if the
+user continues.}
+\label{fig:arch}
+\end{figure}
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}L{2.4cm}Y@{}}
+\toprule
+\textbf{CPU path} & ONNX/OpenVINO CTC ASR; llama.cpp Amharic Llama 1B (2 threads, pinned); MMS or Piper VITS (2 threads, priority over the LLM). \\
+\textbf{GPU path (T4)} & Ethio-ASR or MMS CTC in fp16; Gemma~4 E2B/E4B in 4-bit; OmniVoice-Amharic with 8--16 steps; all on one GPU, with the laptop as a thin audio client. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Why a cascade.} It is the only family that exists for Amharic with open weights today
+(Section~\ref{sec:how}). It can be measured stage by stage, and it lets a different model be chosen for the
+CPU and GPU configurations without changing the orchestration. The half-cascade (Gemma~4 audio-in) is
+kept as an alternative branch and will be tested once (E-HC-1). If Gemma~4 understands Amharic speech
+well, it removes the ASR stage on the GPU path.
+
+\paragraph{Why CTC ASR.} Equal accuracy to Whisper-small, cost proportional to audio length, no
+Amharic token tax, and natural streaming.
+
+\paragraph{Why the first chunk is capped.} Every configuration measured shows that the \emph{length} of
+the first spoken chunk, not the LLM, sets the TTS cost. A 5-word cap removed the long tail
+(p90 15.2 $\rightarrow$ 6.8\,s). E-TTS-4 will tune the cap against naturalness.
