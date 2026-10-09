@@ -15,7 +15,7 @@ Modular production package for the Amharic S2S RAG stack:
 - **`data/` / `index/`** — Labour Proclamation corpus and FAISS/index artifacts
 - **`tests/`** — pytest coverage for pipeline, streaming, latency, and regression checks
 
-### `amharic-speech-to-speech-ragv2 (1).ipynb`
+### `amharic-speech-to-speech-ragv2.ipynb`
 
 End-to-end Colab/notebook pipeline (ASR → RAG → LLM → TTS) that uses `amharic_rag/`:
 
@@ -24,7 +24,7 @@ End-to-end Colab/notebook pipeline (ASR → RAG → LLM → TTS) that uses `amha
 - **TTS**: OmniVoice
 - RAG retrieval over the indexed legal corpus with an interactive HTML client
 
-### `amharic-speech-to-speech-rag-api-server (13).ipynb`
+### `amharic-speech-to-speech-rag-api-server.ipynb`
 
 Deployment notebook that launches the FastAPI server from `amharic_rag/server/`:
 
