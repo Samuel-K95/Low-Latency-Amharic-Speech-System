@@ -1,4 +1,4 @@
-﻿# Low-Latency Amharic Speech System
+# Low-Latency Amharic Speech System
 
 Week 6–7 group assignment: reduce end-to-end latency of an Amharic speech-to-speech conversational system, measured primarily as **Time to First Audio** (end of user speech → first valid response audio).
 
@@ -21,8 +21,8 @@ This `main` branch is the index for the project. Implementation work lives on th
 ### final-optimized-system (Week 7)
 
 - `amharic_rag/` — modular RAG + FastAPI server package
-- `amharic-speech-to-speech-ragv2 (1).ipynb` — end-to-end optimized pipeline notebook
-- `amharic-speech-to-speech-rag-api-server (13).ipynb` — API server launch / deployment notebook
+- `amharic-speech-to-speech-ragv2.ipynb` — end-to-end optimized pipeline notebook
+- `amharic-speech-to-speech-rag-api-server.ipynb` — API server launch / deployment notebook
 
 ## Objective
 
