@@ -1,0 +1,226 @@
+================================================================================
+ETHIOPIA LABOUR PROCLAMATION NO. 1156/2019 - CHUNKING STAGE REPORT
+================================================================================
+
+1. SCHEMA DIFFERENCES FOUND IN ARTICLES.JSON
+--------------------------------------------------------------------------------
+No schema differences found. Expected fields (article_no, title, part, chapter,
+section, subsection, subarticles, full_clean, full_spoken, full_folded) are all present.
+Subarticle fields (marker, marker_no, text_clean, text_spoken, text_folded) match expected schema.
+
+2. SUMMARY STATISTICS
+--------------------------------------------------------------------------------
+Total articles in source: 194 (Articles 0 to 193)
+Total chunks produced: 224
+Total articles merged into multi-article chunks: 27
+Total articles split across multiple chunks: 37
+Total chunks with lead-in repeated (lead_in_repeated: true): 1
+
+3. TOKEN DISTRIBUTION (intfloat/multilingual-e5-small)
+--------------------------------------------------------------------------------
+Prefix evaluated: 'passage: ' + chunk.text_folded
+Mean token count:   167.88
+Median token count: 163.00
+Min token count:    36
+Max token count:    392
+
+Token Histogram (bins of 50 tokens):
+  0-50    :  11 | ###########
+  51-100  :  54 | ######################################################
+  101-150 :  35 | ###################################
+  151-200 :  43 | ###########################################
+  201-250 :  29 | #############################
+  251-300 :  46 | ##############################################
+  301-350 :   5 | #####
+  351-400 :   1 | #
+  401+    :   0 | 
+
+10 Smallest Chunks:
+  [a193_c1] 36 tokens | Arts [193] | አንቀጽ አንድ መቶ ዘጠና ሦስት፡ አዋጁ የሚጸናበት ጊዜ ይህ አዋጅ በነጋሪት ጋዜጣ...
+  [a115_c2] 39 tokens | Arts [115] | አንቀጽ አንድ መቶ አስራ አምስት፡ የማኅበራት ተግባር በማኅበራት መተዳደሪያ ደንቦች ላይ የሚወሰኑትን...
+  [a189_c1] 40 tokens | Arts [189] | አንቀጽ አንድ መቶ ሰማንያ ዘጠኝ፡ የይርጋ ጊዜ በዚህ አዋጅ የተጠቀሰው ማንኛውም ጥፋት...
+  [a072_c1] 42 tokens | Arts [72] | አንቀጽ ሰባ ሁለት፡ ተፈጻሚነት የዚህ ምዕራፍ ድንጋጌዎች በንግድ መልዕክተኞች ወይም የንግድ ወኪሎች...
+  [a001_c1] 43 tokens | Arts [1] | አንቀጽ አንድ፡ አጭር ርዕስ ይህ አዋጅ የአሠሪና ሠራተኛ ጉዳይ አዋጅ ቁጥር አንድ...
+  [a009_c1] 43 tokens | Arts [9] | አንቀጽ ዘጠኝ፡ ላልተወሰነ ጊዜ የሚደረግ የሥራ ውል በዚህ አዋጅ በአንቀጽ አስር ከተመለከቱት...
+  [a000_c3] 44 tokens | Arts [0] | መግቢያ በኢትዮጵያ ፌደራላዊ ዲሞክራሲያዊ ሪፐብሊክ ሕገ-መንግሥት አንቀጽ ሃምሳ አምስት ንዑስ አንቀጽ አንድ...
+  [a106_c1] 45 tokens | Arts [106] | አንቀጽ አንድ መቶ ስድስት፡ የሕክምና አገልግሎት የሚቋረጥበት ጊዜ ሠራተኛው ለደረሰበት ጉዳት የሚደረግለት...
+  [a008_c1] 47 tokens | Arts [8] | አንቀጽ ስምንት፡ የሁኔታዎች አለመሟላት በአንቀጽ ስድስት ወይም ሰባት የተጠቀሱት ሁኔታዎች አለመሟላት ሠራተኛው...
+  [a157_c1] 49 tokens | Arts [157] | አንቀጽ አንድ መቶ ሃምሳ ሰባት፡ ዓመታዊ ሪፖርት ቋሚ ወይም ጊዜያዊ ቦርዱ የሥራ...
+
+10 Largest Chunks:
+  [a039_c1] 392 tokens | Arts [39] | አንቀጽ ሠላሳ ዘጠኝ፡ ጠቅላላ የሙከራ ጊዜውን የጨረሰ እና አግባብነት ባለው የጡረታ ህግ...
+  [a014_c1] 345 tokens | Arts [14] | አንቀጽ አስራ አራት፡ የተከለከለ ድርጊት የሚከተሉት ማናቸውም ተግባራት በአሠሪ ወይም በስራ መሪ...
+  [a148_c1] 338 tokens | Arts [148] | አንቀጽ አንድ መቶ አርባ ስምንት፡ ስለቋሚ ወይም ጊዜያዊ ቦርዱ ሥልጣን ቋሚ ቦርዱ...
+  [a171_c1] 327 tokens | Arts [171] | አንቀጽ አንድ መቶ ሰባ አንድ፡ የሚኒስትሩ ሥልጣን ሚኒስትሩ ለዚህ አዋጅ አፈፃፀም ሲባል...
+  [a140_c1] 325 tokens | Arts [140] | አንቀጽ አንድ መቶ አርባ፡ የይግባኝ ሰሚ ፍርድ ቤት የሥራ ክርክር ችሎት ከፌደራል...
+  [a010_c1] 322 tokens | Arts [10] | አንቀጽ አስር፡ ለተወሰነ ጊዜ ወይም ለተወሰነ ሥራ የሚደረግ የሥራ ውል ከዚህ በታች...
+  [a092_c1] 296 tokens | Arts [92] | አንቀጽ ዘጠና ሁለት፡ የአሠሪ ግዴታዎች ማንኛውም አሠሪ የሠራተኞችን ደኅንነትና ጤንነት በሚገባ ለመጠበቅ...
+  [a032_c1] 296 tokens | Arts [32] | አንቀጽ ሠላሳ ሁለት፡ ያለማስጠንቀቂያ የሥራ ውልን ስለማቋረጥ የሚከተሉት የሥራ ውልን ያለ ማስጠንቀቂያ...
+  [a109_c1] 294 tokens | Arts [109] | አንቀጽ አንድ መቶ ዘጠኝ፡ ስለ ጉዳት ክፍያ በኅብረት ስምምነት በሌላ አኳኋን ካልተወሰነ...
+  [a115_c1] 293 tokens | Arts [115] | አንቀጽ አንድ መቶ አስራ አምስት፡ የማኅበራት ተግባር ማናቸውም ማኅበር የሚከተሉትን ተግባራት ያከናውናል:-...
+
+4. AMBIGUOUS DECISIONS AND LOGGED WARNINGS
+--------------------------------------------------------------------------------
+  - Article 0 exceeds 300 tokens (529 tokens), packing subarticles.
+  - Article 0 subarticle None is oversized (531 tokens). Splitting.
+  - Article 0 subarticle None has no lettered items. Splitting by sentences.
+  - Isolated small article 1 kept as single chunk a001_c1 (43 tokens)
+  - Article 2 exceeds 300 tokens (1107 tokens), packing subarticles.
+  - Article 3 exceeds 300 tokens (346 tokens), packing subarticles.
+  - Merged articles [5, 6, 7] into chunk a005_c1 (261 tokens)
+  - Isolated small article 8 kept as single chunk a008_c1 (47 tokens)
+  - Isolated small article 9 kept as single chunk a009_c1 (43 tokens)
+  - Article 10 exceeds 300 tokens (363 tokens), packing subarticles.
+  - Article 12 exceeds 300 tokens (550 tokens), packing subarticles.
+  - Article 14 exceeds 300 tokens (594 tokens), packing subarticles.
+  - Merged articles [15, 16] into chunk a015_c1 (130 tokens)
+  - Article 27 exceeds 300 tokens (541 tokens), packing subarticles.
+  - Article 27 subarticle ፩/ is oversized (404 tokens). Splitting.
+  - Article 28 exceeds 300 tokens (511 tokens), packing subarticles.
+  - Article 29 exceeds 300 tokens (372 tokens), packing subarticles.
+  - Article 39 exceeds 300 tokens (473 tokens), packing subarticles.
+  - Isolated small article 42 kept as single chunk a042_c1 (50 tokens)
+  - Article 43 exceeds 300 tokens (659 tokens), packing subarticles.
+  - Article 51 exceeds 300 tokens (401 tokens), packing subarticles.
+  - Merged articles [58, 59] into chunk a058_c1 (174 tokens)
+  - Isolated small article 72 kept as single chunk a072_c1 (42 tokens)
+  - Merged articles [73, 74, 75] into chunk a073_c1 (232 tokens)
+  - Merged articles [76, 77] into chunk a076_c1 (273 tokens)
+  - Article 88 exceeds 300 tokens (322 tokens), packing subarticles.
+  - Article 89 exceeds 300 tokens (328 tokens), packing subarticles.
+  - Merged articles [90, 91] into chunk a090_c1 (100 tokens)
+  - Article 92 exceeds 300 tokens (378 tokens), packing subarticles.
+  - Article 98 exceeds 300 tokens (506 tokens), packing subarticles.
+  - Merged articles [100, 101] into chunk a100_c1 (179 tokens)
+  - Merged articles [103, 104] into chunk a103_c1 (167 tokens)
+  - Isolated small article 106 kept as single chunk a106_c1 (45 tokens)
+  - Article 110 exceeds 300 tokens (399 tokens), packing subarticles.
+  - Article 114 exceeds 300 tokens (384 tokens), packing subarticles.
+  - Article 115 exceeds 300 tokens (315 tokens), packing subarticles.
+  - Merged articles [117, 118] into chunk a117_c1 (221 tokens)
+  - Article 119 exceeds 300 tokens (401 tokens), packing subarticles.
+  - Article 122 exceeds 300 tokens (306 tokens), packing subarticles.
+  - Merged articles [128, 129] into chunk a128_c1 (109 tokens)
+  - Article 134 exceeds 300 tokens (330 tokens), packing subarticles.
+  - Article 137 exceeds 300 tokens (457 tokens), packing subarticles.
+  - Article 140 exceeds 300 tokens (386 tokens), packing subarticles.
+  - Article 143 exceeds 300 tokens (418 tokens), packing subarticles.
+  - Article 145 exceeds 300 tokens (324 tokens), packing subarticles.
+  - Article 146 exceeds 300 tokens (397 tokens), packing subarticles.
+  - Article 147 exceeds 300 tokens (305 tokens), packing subarticles.
+  - Article 148 exceeds 300 tokens (483 tokens), packing subarticles.
+  - Article 150 exceeds 300 tokens (315 tokens), packing subarticles.
+  - Merged articles [154, 155] into chunk a154_c1 (194 tokens)
+  - Isolated small article 157 kept as single chunk a157_c1 (49 tokens)
+  - Article 161 exceeds 300 tokens (322 tokens), packing subarticles.
+  - Merged articles [168, 169, 170] into chunk a168_c1 (291 tokens)
+  - Article 171 exceeds 300 tokens (487 tokens), packing subarticles.
+  - Article 177 exceeds 300 tokens (426 tokens), packing subarticles.
+  - Article 178 exceeds 300 tokens (391 tokens), packing subarticles.
+  - Article 181 exceeds 300 tokens (362 tokens), packing subarticles.
+  - Article 185 exceeds 300 tokens (465 tokens), packing subarticles.
+  - Article 186 exceeds 300 tokens (426 tokens), packing subarticles.
+  - Isolated small article 189 kept as single chunk a189_c1 (40 tokens)
+  - Isolated small article 193 kept as single chunk a193_c1 (36 tokens)
+
+5. QUESTION MAPPING TABLE
+--------------------------------------------------------------------------------
+ID   | Article      | Matched Chunk IDs         | Overlap | Flag
+--------------------------------------------------------------------------------
+q01  | 11           | a011_c1                   | 0.67    | OK
+q02  | 61           | a061_c1                   | 1.00    | OK
+q03  | 68(1)(ሐ)     | a068_c1                   | 1.00    | OK
+q04  | 68(1)(ለ)     | a068_c1                   | 0.93    | OK
+q05  | 67(2)        | a067_c1                   | 1.00    | OK
+q06  | 77(1)        | a076_c1                   | 1.00    | OK
+q07  | 77(1)(ለ)     | a076_c1                   | 0.86    | OK
+q08  | 88(3)        | a088_c1                   | 0.89    | OK
+q09  | 81(2)        | a081_c1                   | 0.67    | OK
+q10  | 81(1)        | a081_c1                   | 1.00    | OK
+q11  | 85(2)        | a085_c1                   | 0.80    | OK
+q12  | 86           | a086_c1                   | 0.58    | OK
+q13  | 35(1)        | a035_c1                   | 1.00    | OK
+q14  | 31           | a031_c1                   | 0.88    | OK
+q15  | 40           | a040_c1                   | 0.88    | OK
+q16  | 40(2)        | a040_c1                   | 0.80    | OK
+q17  | 36           | a036_c1                   | 0.83    | OK
+q18  | 38           | a038_c1                   | 0.75    | OK
+q19  | 89(2)        | a089_c1                   | 1.00    | OK
+q20  | 90           | a090_c1                   | 1.00    | OK
+q21  | 87(6)        | a087_c1                   | 0.60    | OK
+q22  | 69(1)        | a069_c1                   | 0.83    | OK
+q23  | 7(1)         | a005_c1                   | 0.80    | OK
+q24  | 55(1)        | a055_c1                   | 1.00    | OK
+q25  | 59(2)        | a058_c1                   | 1.00    | OK
+q26  | 114(1)       | a114_c1                   | 0.50    | OK
+q27  | 119(3)       | a119_c1                   | 0.78    | OK
+q28  | 160(2)       | a160_c1                   | 0.60    | OK
+q29  | 159(3)       | a159_c1                   | 0.60    | OK
+q30  | 163(1)       | a163_c1                   | 0.71    | OK
+q31  | 163(2)       | a163_c1                   | 0.40    | OK
+q32  | 109(4)(ሀ)    | a109_c1                   | 1.00    | OK
+q33  | 110(1)(ለ)    | a110_c1                   | 1.00    | OK
+q34  | 43(4)(ሀ)     | a043_c3                   | 0.91    | OK
+q35  | 27(1)(ሀ)     | a027_c1                   | 1.00    | OK
+q36  | 176          | a176_c1                   | 0.70    | OK
+q37  | 139(2)       | a139_c1                   | 1.00    | OK
+q38  | 187(1)       | a187_c1                   | 1.00    | OK
+q39  | None         | []                        | 0.00    | OK
+q40  | None         | []                        | 0.00    | OK
+q41  | None         | []                        | 0.00    | OK
+q42  | None         | []                        | 0.00    | OK
+q43  | None         | []                        | 0.00    | OK
+
+Flagged Questions Summary:
+  None. All answerable questions mapped with >= 0.40 answer overlap and <= 3 chunks.
+
+6. COMPLETE TEXT_SPOKEN OF SAMPLE CHUNKS (Articles 14, 27, 68, 109)
+================================================================================
+
+>>> ARTICLE 14 (Total chunks: 2) <<<
+
+--- Chunk ID: a014_c1 | Tokens: 345 | Lead-in Repeated: False ---
+አንቀጽ አስራ አራት፡ የተከለከለ ድርጊት
+የሚከተሉት ማናቸውም ተግባራት በአሠሪ ወይም በስራ መሪ ከተፈፀሙ የአሠሪ ህገወጥ ተግባራት ተደርገው ይቆጠራሉ:-፤ ሠራተኛው መብቱን እንዳያስከብር በማንኛውም አኳኋን ማደናቀፍ ወይም መብቱን በማስከበሩ በሠራተኛው ላይ እርምጃ መውሰድ፤ በሴት ሠራተኞች ላይ በፆታቸው ምክንያት የክፍያ ልዩነት ማድረግ፤ የዚህን አዋጅ ድንጋጌዎች በሚቃረን አኳኋን የሥራ ውልን ማቋረጥ፤ ሠራተኛን የሠራተኛ ማኅበር አባል እንዲሆን ወይም እንዳይሆን፣ ከሆነም በኋላ አባልነቱን እንዲያቋርጥ ወይም እንዳያቋርጥ፣ ከአንድ ማኅበር ወጥቶ የሌላ ማኅበር አባል እንዲሆን ወይም እንዳይሆን፣ በማኅበር ምርጫ ወቅት ለአንድ ተወዳዳሪ ድምጹን እንዲሰጥ ወይም እንዳይሰጥ በኃይልም ሆነ በሌላ በማናቸውም መንገድ ተፅዕኖ ማሳደር፤ ሠራተኛን በሕይወቱ ላይ አደጋ ሊያደርስበት በሚችል አኳኋን እንዲሰራ ማስገደድ፤ በብሔር፣ በፆታ፣ በሃይማኖት፣ በፖለቲካ አመለካከት፣ በኤች.አይ.ቪ./ኤድስ፣ በአካል ጉዳት እና በሌላም ሁኔታ በሠራተኞች መካከል አድልዎ መፈጸም፤ ለኅብረት ድርድር አስፈላጊ የሆነ መረጃ ባለማቅረብ የድርድር ጊዜ እንዲራዘም ማድረግ ወይም ሌሎች ከቅን ልቦና ውጭ የሆኑ ተግባራትን መፈፀም፤ በሥራ ቦታ ወሲባዊ ትንኮሳ ወይም ጥቃት መፈፀም፤ በሥራ ቦታ አካላዊ ጥቃት መፈፀም፤ ሠራተኛን በኃይል አስገድዶ ማንኛውንም ሥራ እንዲሠራ ወይም ግዴታን እንዲያሟላ ማድረግ፡፡
+------------------------------------------------------------
+
+--- Chunk ID: a014_c2 | Tokens: 264 | Lead-in Repeated: False ---
+አንቀጽ አስራ አራት፡ የተከለከለ ድርጊት
+የሚከተሉትን መፈፀም ለማንኛውም ሠራተኛ የተከለከለ ድርጊት ነው:-፤ ሕይወትና ንብረትን አደጋ ላይ የሚጥል ድርጊት ሆነ ብሎ በሥራ ቦታ መፈጸም፤ አሠሪው በግልጽ ሳይፈቅድ ከሥራ ቦታ ንብረት መውሰድ፤ በሀሰተኛ ሰነድ መገልገል ወይም ለመገልገል መሞከር፤ በሥራ ቦታ በህግ የተከለከሉ አደንዛዥ ዕፆችን ወይም የአልኮል መጠጦችን መጠቀም ወይም ተጠቅሞ ለሥራ ብቁ ባልሆነ የአዕምሮና የአካላዊ ሁኔታ ውስጥ ሆኖ መገኘት፤ ሕግ ሲያስገድድ ወይም አሠሪው በበቂ ምክንያት ሲጠይቅ ከኤች.አይ.ቪ./ከኤድስ ምርመራ በስተቀር የጤና ምርመራ ለማድረግ ፈቃደኛ አለመሆን፤ ስለደኅንነት ጥበቃና ስለአደጋ መከላከል የወጡ የሥራ ደንቦችን አለማክበርና አስፈላጊ የሆኑትን የአደጋ መከላከያ ጥንቃቄዎች ለመውሰድ ፈቃደኛ አለመሆን፤ በኅብረት ስምምነት ከተፈቀደው ውጭ ወይም አሠሪው ሳይፈቅድ በሥራ ሰዓት ስብሰባ ማካሄድ፤ በሥራ ቦታ ወሲባዊ ትንኮሳ ወይም ጥቃት መፈፀም፤ በሥራ ቦታ አካላዊ ጥቃት መፈፀም፡፡
+------------------------------------------------------------
+
+>>> ARTICLE 27 (Total chunks: 3) <<<
+
+--- Chunk ID: a027_c1 | Tokens: 291 | Lead-in Repeated: False ---
+አንቀጽ ሃያ ሰባት፡ ያለማስጠንቀቂያ የሥራ ውል ስለማቋረጥ
+በኅብረት ስምምነት በሌላ አኳኋን ካልተወሰነ በስተቀር የሥራ ውልን ያለማስጠንቀቂያ ማቋረጥ የሚቻለው በሚከተሉት ምክንያቶች ብቻ ነው:-፤ ሠራተኛው የሥራ ሰዓት ለማክበር የማይችልባቸው ሁኔታዎች ተብለው በኅብረት ስምምነት በሥራ ደንብ ወይም በሥራ ውሉ ከተዘረዘሩት ምክንያቶች ውጭ የጽሁፍ ማስጠንቀቂያ እየተሰጠው በስድስት ወር ውስጥ በጠቅላላው ለስምንት ጊዜ የስራ ሰዓት አለማክበር፤ በዚህ አዋጅ ከተመለከቱ እረፍቶች እና ልዩ ልዩ ፈቃዶች ውጭ የጽሁፍ ማስጠንቀቂያ እየተሰጠው በስድስት ወር ውስጥ ለአምስት ቀናት ከስራ መቅረት፤ በሥራው ላይ የማታለል ተግባር መፈፀም፤ የራሱን ወይም የሌላ ሰው ብልጽግናን በመሻት በማንኛውም የአሠሪው ንብረት ወይም ገንዘብ አለአግባብ መጠቀም፤ ሠራተኛው ሥራውን ለመሥራት ችሎታ እያለው የሥራ ውጤቱ ባለማቋረጥ በኅብረት ስምምነት ወይም በሥራ ደንቡ ወይም በሁለቱ ወገኖች መግባባት ከተወሰነው የምርት ጥራትና መጠን በታች ሲሆን፤ እንደጥፋቱ ክብደት በሥራው ቦታ አምባጓሮ ወይም ጠብ አጫሪነት ተጠያቂ መሆን፤ በወንጀል ጥፋተኛ ሆኖ መገኘትና በጥፋቱም ምክንያት ለያዘው ሥራ ብቁ ሆኖ አለመገኘት፤
+------------------------------------------------------------
+
+--- Chunk ID: a027_c2 | Tokens: 171 | Lead-in Repeated: True ---
+አንቀጽ ሃያ ሰባት፡ ያለማስጠንቀቂያ የሥራ ውል ስለማቋረጥ
+በኅብረት ስምምነት በሌላ አኳኋን ካልተወሰነ በስተቀር የሥራ ውልን ያለማስጠንቀቂያ ማቋረጥ የሚቻለው በሚከተሉት ምክንያቶች ብቻ ነው:-፤ በአሠሪው ንብረት ወይም ከድርጅቱ ሥራ ጋር በቀጥታ ግንኙነት ባለው ማናቸውም ንብረት ላይ ሆነ ብሎ ወይም በከባድ ቸልተኝነት ጉዳት ማድረስ፤ በአንቀጽ አስራ አራት ንዑስ አንቀጽ ሁለት የተመለከቱትን ሕገወጥ ድርጊቶች መፈፀም፤ በሠራተኛው ላይ ከሰላሳ ቀናት ለሚበልጥ ጊዜ የእሥራት ፍርድ ተወስኖበት ከሥራ ሲቀር፤ ያለማስጠንቀቂያ የሥራ ውል ለማቋረጥ ያስችላሉ ተብለው በኅብረት ስምምነት የተወሰኑ ሌሎች ጥፋቶችን መፈፀም፡፡
+------------------------------------------------------------
+
+--- Chunk ID: a027_c3 | Tokens: 159 | Lead-in Repeated: False ---
+አንቀጽ ሃያ ሰባት፡ ያለማስጠንቀቂያ የሥራ ውል ስለማቋረጥ
+አንድ አሠሪ በዚህ አንቀጽ መሰረት የሥራ ውል በሚያቋርጥበት ጊዜ የሥራ ውሉ የሚያቋረጥበትን ምክንያትና ቀን በመጥቀስ ለሠራተኛው በጹሑፍ መግለፅ አለበት፡፡ አንድ አሠሪ በዚህ አንቀጽ መሰረት የሥራ ውሉን ለማቋረጥ ያለው መብት ውሉ የሚቋረጥበት ምክንያት መኖሩን ካወቀ ከሰላሳ የሥራ ቀናት በኋላ በይርጋ ይታገዳል፡፡ በዚህ አንቀጽ መሰረት የሠራተኛው የሥራ ውል እንዲቋረጥ ከመደረጉ በፊት ሠራተኛውን ከሥራ አግዶ ማቆየት ስለሚቻልበት ሁኔታ በኅብረት ስምምነት ሊወሰን ይችላል፡፡ ሆኖም የዕገዳው ጊዜ ከሰላሳ የሥራ ቀናት መብለጥ የለበትም፡፡
+------------------------------------------------------------
+
+>>> ARTICLE 68 (Total chunks: 1) <<<
+
+--- Chunk ID: a068_c1 | Tokens: 246 | Lead-in Repeated: False ---
+አንቀጽ ስድሳ ስምንት፡ የትርፍ ሰዓት ሥራ አከፋፈል
+የትርፍ ሰዓት ሥራ የሚሰራ ሠራተኛ ከመደበኛ ደመወዙ በተጨማሪ ቢያንስ ቀጥሎ በተመለከተው አኳኋን ይከፈለዋል:-፤ ከንጋቱ አስራ ሁለት ሰዓት እስከ ምሽቱ አራት ሰዓት ለሚሠራ የትርፍ ሰዓት ሥራ ለመደበኛ ሥራ በሰዓት የሚከፈለው ደመወዝ በአንድ ተኩል ተባዝቶ፤ ከምሽቱ አራት ሰዓት እስከ ንጋቱ አስራ ሁለት ሰዓት ለሚሠራ የትርፍ ሰዓት ሥራ ለመደበኛ ሥራው በሰዓት የሚከፈለው ደመወዝ በአንድ ሦስት አራተኛ በአንድ ነጥብ ሰባ አምስት ተባዝቶ፤ በሳምንት የዕረፍት ቀን የሚሠራ የትርፍ ሰዓት ሥራ ለመደበኛው ሥራው በሰዓት የሚከፈለው ደመወዝ በሁለት ተባዝቶ፣ በሕዝብ በዓላት ቀን ለሚሠራ የትርፍ ሰዓት ሥራ ለመደበኛ ሥራው በሰዓት የሚከፈለው ደመወዝ በሁለት ተኩልበአንድ ነጥብ አምስት ተባዝቶ፣ የትርፍ ሰዓት ክፍያ ለደመወዝ መክፈያ በተወሰነው ቀን ከደመወዝ ጋር ተደምሮ ይከፈላል፡፡
+------------------------------------------------------------
+
+>>> ARTICLE 109 (Total chunks: 1) <<<
+
+--- Chunk ID: a109_c1 | Tokens: 294 | Lead-in Repeated: False ---
+አንቀጽ አንድ መቶ ዘጠኝ፡ ስለ ጉዳት ክፍያ
+በኅብረት ስምምነት በሌላ አኳኋን ካልተወሰነ በስተቀር በዚህ አዋጅ ለሚሸፈኑ ድርጅቶች ሠራተኞች የሚሰጠው የጉዳት ካሣ አሠሪው በገባበት የመድህን ዋስትና ወይም በጡረታ ሕግ መሠረት ይሆናል፡፡ ድርጅቱ መድህን ያልገባ ከሆነ በጡረታ ሕግ ለሚሸፈኑ ሠራተኞች አግባብ ያለው የጡረታ ሕግ ተፈፃሚ ይሆናል፡፡ በዚህ አንቀጽ ንዑስ አንቀጽ አንድ የተደነገገው ቢኖርም በኢንሹራንስ በኩል ለሠራተኛው የሚከፈለው የጉዳት ካሳ መጠን በማንኛውም ሁኔታ በዚህ አንቀጽ ንዑስ አንቀጽ አራት ከተመለከተው መጠን ሊያንስ አይችልም። በጡረታ ሕግ ላልተሸፈኑ ሠራተኞች የሚሰጠው የጉዳት ካሣ በአንድ ጊዜ ይከፈላል፡፡ በአሠሪው የሚከፈለው የጉዳት ካሣ መጠንም:-፤ በሠራተኛው ላይ የደረሰው ጉዳት ዘላቂ ሙሉ የአካል ጉዳት ከሆነ የሠራተኛው የዓመት ደመወዝ በአምስት ተባዝቶ የሚገኘው ክፍያ፤ በሠራተኛው ላይ የደረሰው ጉዳት ከዘላቂ ሙሉ የአካል ጉዳት መጠን በታች ከሆነ በዚህ አንቀጽ ንዑስ አንቀጽ አራት ፊደል ሀ ክፍያ መሠረት ሆኖ ከአካል ጉድለት ደረጃው ጋር ተመጣጣኝ የሆነ ክፍያ ይሆናል፡፡ ለለማጅ ሠራተኛ የሚከፈለው የጉዳት ካሣ የሚሰላው የለማጅ ሠራተኛነቱን ሲፈጽም ሊያገኝ ይችል የነበረውን ደመወዝ መሠረት በማድረግ ይሆናል፡፡
+------------------------------------------------------------
+
+7. TEST SUITE VERIFICATION SUMMARY
+--------------------------------------------------------------------------------
+Run `pytest tests/test_chunk.py` to verify all hard rules and constraints.
+================================================================================

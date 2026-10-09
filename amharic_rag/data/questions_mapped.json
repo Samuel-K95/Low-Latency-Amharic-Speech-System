@@ -1,0 +1,657 @@
+{
+  "meta": {
+    "source_file": "Labour Proclamation No. 1156/2019 (Amharic text)",
+    "language": "am",
+    "status": "draft v1: chunk_ids empty until step 3",
+    "fields": {
+      "id": "q01..q41",
+      "question": "spoken-style Amharic, numbers written as words",
+      "answerable": "false means the file does not contain the answer; expected behavior is 'I don't know'",
+      "article": "article number in the proclamation (for human lookup, replaced by chunk_ids later)",
+      "answer": "short reference answer, spoken style",
+      "chunk_ids": "fill after chunking (step 3)"
+    }
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "question": "የሙከራ ጊዜ ከስንት የሥራ ቀናት መብለጥ የለበትም?",
+      "answerable": true,
+      "article": "11",
+      "answer": "የሙከራ ጊዜ ከስድሳ የሥራ ቀናት መብለጥ የለበትም።",
+      "chunk_ids": [
+        "a011_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.667,
+        "flag": null
+      }
+    },
+    {
+      "id": "q02",
+      "question": "መደበኛ የሥራ ሰዓት በቀን ስንት ሰዓት ነው?",
+      "answerable": true,
+      "article": "61",
+      "answer": "በቀን ከስምንት ሰዓት፣ በሳምንት ከአርባ ስምንት ሰዓት አይበልጥም።",
+      "chunk_ids": [
+        "a061_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q03",
+      "question": "በሳምንት የዕረፍት ቀን ለሚሠራ የትርፍ ሰዓት ሥራ ክፍያው ስንት እጥፍ ነው?",
+      "answerable": true,
+      "article": "68(1)(ሐ)",
+      "answer": "በሰዓት የሚከፈለው ደመወዝ በሁለት ተባዝቶ ይከፈላል።",
+      "chunk_ids": [
+        "a068_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q04",
+      "question": "በሌሊት የሚሠራ የትርፍ ሰዓት ሥራ ክፍያ ስንት እጥፍ ነው?",
+      "answerable": true,
+      "article": "68(1)(ለ)",
+      "answer": "ከምሽቱ አራት ሰዓት እስከ ንጋቱ አስራ ሁለት ሰዓት ለሚሠራ ሥራ አንድ ነጥብ ሰባ አምስት እጥፍ ይከፈላል።",
+      "chunk_ids": [
+        "a068_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.929,
+        "flag": null
+      }
+    },
+    {
+      "id": "q05",
+      "question": "በአስቸኳይ ሥራ ምክንያት የትርፍ ሰዓት ሥራ በቀን ስንት ሰዓት መብለጥ የለበትም?",
+      "answerable": true,
+      "article": "67(2)",
+      "answer": "በቀን ከአራት ሰዓት፣ በሳምንት ከአስራ ሁለት ሰዓት መብለጥ የለበትም።",
+      "chunk_ids": [
+        "a067_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q06",
+      "question": "የመጀመሪያ ዓመት የዓመት ፈቃድ ስንት ቀን ነው?",
+      "answerable": true,
+      "article": "77(1)",
+      "answer": "ለመጀመሪያ ዓመት አገልግሎት አስራ ስድስት የሥራ ቀናት ነው።",
+      "chunk_ids": [
+        "a076_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q07",
+      "question": "ከአንድ ዓመት በላይ ላገለገለ ሠራተኛ የዓመት ፈቃድ እንዴት ይጨመራል?",
+      "answerable": true,
+      "article": "77(1)(ለ)",
+      "answer": "ለእያንዳንዱ ሁለት የአገልግሎት ዓመት አንድ የሥራ ቀን ይጨመራል።",
+      "chunk_ids": [
+        "a076_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.857,
+        "flag": null
+      }
+    },
+    {
+      "id": "q08",
+      "question": "ነፍሰጡር ሠራተኛ ከመውለዷ በፊትና በኋላ ስንት ቀን የወሊድ ፈቃድ ታገኛለች?",
+      "answerable": true,
+      "article": "88(3)",
+      "answer": "ከመውለዷ በፊት ሠላሳ ቀን፣ ከወለደች በኋላ ዘጠና ቀን ከክፍያ ጋር ታገኛለች።",
+      "chunk_ids": [
+        "a088_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.889,
+        "flag": null
+      }
+    },
+    {
+      "id": "q09",
+      "question": "ሚስቱ የወለደችበት ወንድ ሠራተኛ ስንት ቀን ፈቃድ ያገኛል?",
+      "answerable": true,
+      "article": "81(2)",
+      "answer": "ሦስት ተከታታይ ቀናት ከሙሉ ክፍያ ጋር ያገኛል።",
+      "chunk_ids": [
+        "a081_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.667,
+        "flag": null
+      }
+    },
+    {
+      "id": "q10",
+      "question": "ሠራተኛ ሲያገባ ወይም ዘመድ ሲሞትበት ስንት ቀን ፈቃድ ይሰጠዋል?",
+      "answerable": true,
+      "article": "81(1)",
+      "answer": "ሦስት የሥራ ቀናት ከክፍያ ጋር ይሰጠዋል።",
+      "chunk_ids": [
+        "a081_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q11",
+      "question": "የሕመም ፈቃድ ከስንት ወር መብለጥ የለበትም?",
+      "answerable": true,
+      "article": "85(2)",
+      "answer": "በአስራ ሁለት ወር ውስጥ ከስድስት ወር አይበልጥም።",
+      "chunk_ids": [
+        "a085_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.8,
+        "flag": null
+      }
+    },
+    {
+      "id": "q12",
+      "question": "በሕመም ፈቃድ ወቅት ክፍያው እንዴት ነው?",
+      "answerable": true,
+      "article": "86",
+      "answer": "የመጀመሪያው ወር ሙሉ ደመወዝ፣ ቀጣዮቹ ሁለት ወራት ግማሽ ደመወዝ፣ ቀጣዮቹ ሦስት ወራት ያለክፍያ ነው።",
+      "chunk_ids": [
+        "a086_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.583,
+        "flag": null
+      }
+    },
+    {
+      "id": "q13",
+      "question": "አሠሪ ለሠራተኛ የሚሰጠው የማስጠንቀቂያ ጊዜ ስንት ነው?",
+      "answerable": true,
+      "article": "35(1)",
+      "answer": "እስከ አንድ ዓመት አንድ ወር፣ ከአንድ እስከ ዘጠኝ ዓመት ሁለት ወር፣ ከዘጠኝ ዓመት በላይ ሦስት ወር ነው።",
+      "chunk_ids": [
+        "a035_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q14",
+      "question": "ሠራተኛ ሥራውን ሲለቅ ምን ያህል ቀን ማስጠንቀቂያ መስጠት አለበት?",
+      "answerable": true,
+      "article": "31",
+      "answer": "የሙከራ ጊዜውን የጨረሰ ሠራተኛ የሠላሳ ቀን ማስጠንቀቂያ መስጠት አለበት።",
+      "chunk_ids": [
+        "a031_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.875,
+        "flag": null
+      }
+    },
+    {
+      "id": "q15",
+      "question": "የሥራ ስንብት ክፍያ እንዴት ይሰላል?",
+      "answerable": true,
+      "article": "40",
+      "answer": "ለመጀመሪያው ዓመት የመጨረሻ ሳምንት አማካይ የቀን ደመወዝ በሠላሳ ተባዝቶ ይከፈላል፤ ለእያንዳንዱ ተጨማሪ ዓመት አንድ ሦስተኛ ይጨመራል።",
+      "chunk_ids": [
+        "a040_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.875,
+        "flag": null
+      }
+    },
+    {
+      "id": "q16",
+      "question": "የሥራ ስንብት ክፍያ ከስንት ወር ደመወዝ መብለጥ የለበትም?",
+      "answerable": true,
+      "article": "40(2)",
+      "answer": "ከአስራ ሁለት ወር ደመወዝ መብለጥ የለበትም።",
+      "chunk_ids": [
+        "a040_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.8,
+        "flag": null
+      }
+    },
+    {
+      "id": "q17",
+      "question": "የሥራ ውል ሲቋረጥ ክፍያ በስንት ቀን ውስጥ መከፈል አለበት?",
+      "answerable": true,
+      "article": "36",
+      "answer": "በሰባት የሥራ ቀናት ውስጥ መከፈል አለበት።",
+      "chunk_ids": [
+        "a036_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.833,
+        "flag": null
+      }
+    },
+    {
+      "id": "q18",
+      "question": "አሠሪው ክፍያ ካዘገየ ምን ቅጣት ይጠብቀዋል?",
+      "answerable": true,
+      "article": "38",
+      "answer": "ፍርድ ቤቱ እስከ ሦስት ወር የሚደርስ ደመወዝ እንዲከፍል ሊወስን ይችላል።",
+      "chunk_ids": [
+        "a038_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.75,
+        "flag": null
+      }
+    },
+    {
+      "id": "q19",
+      "question": "ሠራተኛ ለመቅጠር ዝቅተኛው ዕድሜ ስንት ነው?",
+      "answerable": true,
+      "article": "89(2)",
+      "answer": "ከአስራ አምስት ዓመት በታች መቅጠር ክልክል ነው።",
+      "chunk_ids": [
+        "a089_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q20",
+      "question": "የወጣት ሠራተኞች የሥራ ሰዓት በቀን ስንት ነው?",
+      "answerable": true,
+      "article": "90",
+      "answer": "በቀን ከሰባት ሰዓት መብለጥ የለበትም።",
+      "chunk_ids": [
+        "a090_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q21",
+      "question": "ነፍሰጡር ሠራተኛን ከሥራ ማሰናበት ይቻላል?",
+      "answerable": true,
+      "article": "87(6)",
+      "answer": "ነፍሰጡር በሆነችበት ጊዜና ከወለደች በኋላ እስከ አራት ወር ድረስ ማሰናበት አይቻልም።",
+      "chunk_ids": [
+        "a087_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.6,
+        "flag": null
+      }
+    },
+    {
+      "id": "q22",
+      "question": "የሳምንት ዕረፍት ቢያንስ ስንት ሰዓት ነው?",
+      "answerable": true,
+      "article": "69(1)",
+      "answer": "ያልተቆራረጠ ከሃያ አራት ሰዓት የማያንስ ነው።",
+      "chunk_ids": [
+        "a069_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.833,
+        "flag": null
+      }
+    },
+    {
+      "id": "q23",
+      "question": "የሥራ ውል በጽሑፍ ካልተደረገ አሠሪው ምን ማድረግ አለበት?",
+      "answerable": true,
+      "article": "7(1)",
+      "answer": "በአስራ አምስት ቀናት ውስጥ የተፈረመ የጽሑፍ መግለጫ ለሠራተኛው መስጠት አለበት።",
+      "chunk_ids": [
+        "a005_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.8,
+        "flag": null
+      }
+    },
+    {
+      "id": "q24",
+      "question": "ደመወዝ በዓይነት ሊከፈል ይችላል?",
+      "answerable": true,
+      "article": "55(1)",
+      "answer": "ከተስማሙ ይችላል፤ ግን በጥሬ ገንዘብ ከሚከፈለው ደመወዝ ሠላሳ በመቶ መብለጥ የለበትም።",
+      "chunk_ids": [
+        "a055_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q25",
+      "question": "ከሠራተኛ ደመወዝ በአንድ ጊዜ ሊቆረጥ የሚችለው ከፍተኛ መጠን ስንት ነው?",
+      "answerable": true,
+      "article": "59(2)",
+      "answer": "ሠራተኛው በጽሑፍ ካልተስማማ ከወር ደመወዙ አንድ ሦስተኛ መብለጥ የለበትም።",
+      "chunk_ids": [
+        "a058_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q26",
+      "question": "የሠራተኛ ማኅበር ለማቋቋም ቢያንስ ስንት ሠራተኞች ያስፈልጋሉ?",
+      "answerable": true,
+      "article": "114(1)",
+      "answer": "ቢያንስ አስር አባላት ያስፈልጋሉ።",
+      "chunk_ids": [
+        "a114_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.5,
+        "flag": null
+      }
+    },
+    {
+      "id": "q27",
+      "question": "ማኅበር ለምዝገባ ካመለከተ በስንት ቀን ውስጥ ምላሽ ያገኛል?",
+      "answerable": true,
+      "article": "119(3)",
+      "answer": "በአስራ አምስት የሥራ ቀናት ውስጥ፤ ምላሽ ካልተሰጠ እንደተመዘገበ ይቆጠራል።",
+      "chunk_ids": [
+        "a119_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.778,
+        "flag": null
+      }
+    },
+    {
+      "id": "q28",
+      "question": "የሥራ ማቆም ከመወሰዱ ስንት ቀን በፊት ማስጠንቀቂያ መሰጠት አለበት?",
+      "answerable": true,
+      "article": "160(2)",
+      "answer": "ከአስር ቀን በፊት ማስጠንቀቂያ መሰጠት አለበት።",
+      "chunk_ids": [
+        "a160_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.6,
+        "flag": null
+      }
+    },
+    {
+      "id": "q29",
+      "question": "ሠራተኞች የሥራ ማቆም እርምጃ ለመውሰድ ምን ዓይነት ድምፅ ያስፈልጋል?",
+      "answerable": true,
+      "article": "159(3)",
+      "answer": "ከአባላት ቢያንስ ሁለት ሦስተኛ በተገኙበት ስብሰባ በአብላጫ ድምፅ መደገፍ አለበት።",
+      "chunk_ids": [
+        "a159_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.6,
+        "flag": null
+      }
+    },
+    {
+      "id": "q30",
+      "question": "ከሥራ ውል ጋር የተያያዘ ክስ በስንት ጊዜ ውስጥ መቅረብ አለበት?",
+      "answerable": true,
+      "article": "163(1)",
+      "answer": "በአጠቃላይ በአንድ ዓመት ውስጥ ካልቀረበ በይርጋ ይታገዳል።",
+      "chunk_ids": [
+        "a163_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.714,
+        "flag": null
+      }
+    },
+    {
+      "id": "q31",
+      "question": "ሠራተኛ ወደ ሥራ እንዲመለስ የሚያቀርበው ክስ በስንት ጊዜ ውስጥ መቅረብ አለበት?",
+      "answerable": true,
+      "article": "163(2)",
+      "answer": "ውሉ ከተቋረጠ በሦስት ወር ውስጥ መቅረብ አለበት።",
+      "chunk_ids": [
+        "a163_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.4,
+        "flag": null
+      }
+    },
+    {
+      "id": "q32",
+      "question": "በሥራ ላይ ዘላቂ ሙሉ የአካል ጉዳት ቢደርስ ካሣው ስንት ነው?",
+      "answerable": true,
+      "article": "109(4)(ሀ)",
+      "answer": "የሠራተኛው የዓመት ደመወዝ በአምስት ተባዝቶ ይከፈላል።",
+      "chunk_ids": [
+        "a109_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q33",
+      "question": "ለቀብር ሥነ ሥርዓት ቢያንስ ስንት ደመወዝ ይከፈላል?",
+      "answerable": true,
+      "article": "110(1)(ለ)",
+      "answer": "ከሁለት ወር ደመወዝ ያላነሰ ይከፈላል።",
+      "chunk_ids": [
+        "a110_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q34",
+      "question": "ሕገወጥ በሆነ መንገድ ለተሰናበተ ሠራተኛ የሚከፈለው ካሣ ስንት ነው?",
+      "answerable": true,
+      "article": "43(4)(ሀ)",
+      "answer": "ላልተወሰነ ጊዜ ውል አማካይ የቀን ደመወዝ በአንድ መቶ ሰማንያ ተባዝቶ፣ በተጨማሪ የማስጠንቀቂያ ጊዜ ደመወዝ ይከፈላል።",
+      "chunk_ids": [
+        "a043_c3"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.909,
+        "flag": null
+      }
+    },
+    {
+      "id": "q35",
+      "question": "ያለማስጠንቀቂያ ከሥራ የሚያሰናብት የመዘግየት ጥፋት ምንድን ነው?",
+      "answerable": true,
+      "article": "27(1)(ሀ)",
+      "answer": "የጽሑፍ ማስጠንቀቂያ እየተሰጠው በስድስት ወር ውስጥ ስምንት ጊዜ የሥራ ሰዓት አለማክበር ነው።",
+      "chunk_ids": [
+        "a027_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q36",
+      "question": "የውጭ አገር ዜጋ ለመቀጠር ምን ያስፈልጋል?",
+      "answerable": true,
+      "article": "176",
+      "answer": "ከሚኒስቴሩ የሥራ ፈቃድ መያዝ አለበት፤ ፈቃዱ እስከ ሦስት ዓመት ይሰጣል።",
+      "chunk_ids": [
+        "a176_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 0.7,
+        "flag": null
+      }
+    },
+    {
+      "id": "q37",
+      "question": "የሥራ ክርክር ችሎት ጉዳይ በቀረበለት በስንት ቀን ውስጥ ውሳኔ መስጠት አለበት?",
+      "answerable": true,
+      "article": "139(2)",
+      "answer": "በስድሳ ቀናት ውስጥ ውሳኔ መስጠት አለበት።",
+      "chunk_ids": [
+        "a139_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q38",
+      "question": "ፈቃድ የሌለው ሰው ሥራና ሠራተኛ ቢያገናኝ ቅጣቱ ምንድን ነው?",
+      "answerable": true,
+      "article": "187(1)",
+      "answer": "ከአምስት እስከ አስር ዓመት እስራትና አንድ መቶ ሺህ ብር መቀጮ ይቀጣል።",
+      "chunk_ids": [
+        "a187_c1"
+      ],
+      "mapping_checks": {
+        "matched_chunks": 1,
+        "answer_overlap": 1.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q39",
+      "question": "ዝቅተኛው የወር ደመወዝ በብር ስንት ነው?",
+      "answerable": false,
+      "article": null,
+      "answer": "አላውቅም።",
+      "chunk_ids": [],
+      "note": "Only mentions a Wage Board (Art 55(2)); no amount.",
+      "mapping_checks": {
+        "matched_chunks": 0,
+        "answer_overlap": 0.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q40",
+      "question": "ሠራተኛ በስንት ዓመቱ ጡረታ ይወጣል?",
+      "answerable": false,
+      "article": null,
+      "answer": "አላውቅም።",
+      "chunk_ids": [],
+      "note": "Retirement age is in the pension law, not here.",
+      "mapping_checks": {
+        "matched_chunks": 0,
+        "answer_overlap": 0.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q41",
+      "question": "የገቢ ግብር መጠን ከደመወዝ ስንት በመቶ ነው?",
+      "answerable": false,
+      "article": null,
+      "answer": "አላውቅም።",
+      "chunk_ids": [],
+      "note": "Only says injury benefits are tax-exempt (Art 112).",
+      "mapping_checks": {
+        "matched_chunks": 0,
+        "answer_overlap": 0.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q42",
+      "question": "የቤት ሠራተኛ የሚከፈለው ደመወዝ ስንት ነው?",
+      "answerable": false,
+      "article": null,
+      "answer": "አላውቅም።",
+      "chunk_ids": [],
+      "note": "Personal service is excluded (Art 3); Council of Ministers regulation, not in file.",
+      "mapping_checks": {
+        "matched_chunks": 0,
+        "answer_overlap": 0.0,
+        "flag": null
+      }
+    },
+    {
+      "id": "q43",
+      "question": "የሀገሪቱ የሕዝብ በዓላት የትኞቹ ናቸው?",
+      "answerable": false,
+      "article": null,
+      "answer": "አላውቅም።",
+      "chunk_ids": [],
+      "note": "Art 73 refers to other law; no list.",
+      "mapping_checks": {
+        "matched_chunks": 0,
+        "answer_overlap": 0.0,
+        "flag": null
+      }
+    }
+  ]
+}

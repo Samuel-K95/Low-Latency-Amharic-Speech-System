@@ -1,0 +1,11 @@
+{
+  "model": "intfloat/multilingual-e5-base",
+  "num_chunks": 227,
+  "dim": 768,
+  "passage_prefix": "passage: ",
+  "query_prefix": "query: ",
+  "normalized": true,
+  "index_type": "IndexFlatIP",
+  "chunks_sha256": "5560514aa8bb6f73e4b8616408af0e05789b278ebb490e5ce7928793812b6bf1",
+  "built_at": "2026-10-06 15:39:33"
+}
