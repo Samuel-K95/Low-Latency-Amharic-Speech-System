@@ -1,4 +1,4 @@
-# Low-Latency Amharic Speech System
+﻿# Low-Latency Amharic Speech System
 
 Week 6–7 group assignment: reduce end-to-end latency of an Amharic speech-to-speech conversational system, measured primarily as **Time to First Audio** (end of user speech → first valid response audio).
 
@@ -14,7 +14,9 @@ This `main` branch is the index for the project. Implementation work lives on th
 ### Research-experiments (Week 6)
 
 - `Amharic_S2S_Benchmarks (1).ipynb` — ASR / LLM / TTS latency and quality benchmarks
-- `hohe_asr_tiny_aya_llm_tts_omnivoice_cleaned (2).ipynb` — interactive baseline S2S prototype
+- `hohe_asr_tiny_aya_llm_tts_omnivoice_cleaned (2).ipynb` — interactive baseline (Hohe + Tiny Aya + OmniVoice)
+- `ehio_asr_tiny_aya_earth_llm_omnivoice_TTS.ipynb` — Ethio-ASR variant with Tiny Aya + OmniVoice
+- `ethio_asr_llm_omnivoice_tts.ipynb` — Ethio-ASR + Amharic-LLAMA + OmniVoice alternate stack
 
 ### final-optimized-system (Week 7)
 
