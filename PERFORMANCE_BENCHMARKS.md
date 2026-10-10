@@ -6,12 +6,10 @@ Latency and quality analysis for the selected Amharic speech-to-speech baseline:
 
 **Primary metric:** Time to First Audio (TTFA) — end of user speech → first valid response audio.
 
-**Sources**
+**Sources (only these two)**
 
 - `Amharic_S2S_Benchmarks (1).ipynb` — component and end-to-end measurements on **Tesla T4**
-- Latency optimization experiments (laptop orchestration) summarized from the Week 6 latency deck
-
-Related interactive prototype: `hohe_asr_tiny_aya_llm_tts_omnivoice_cleaned (2).ipynb`
+- `Latency_Optimization.pptx` — laptop orchestration experiments and optimization findings
 
 ---
 
