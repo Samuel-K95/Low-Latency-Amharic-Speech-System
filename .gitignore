@@ -2,3 +2,5 @@
 *.pyc
 *.pyo
 .ipynb_checkpoints/
+Amharic_S2S_RAG_Sequential_vs_Optimized.pdf
+_pdf_extract.txt

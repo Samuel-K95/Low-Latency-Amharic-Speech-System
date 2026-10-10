@@ -46,4 +46,8 @@ Copy the notebook on Kaggle and run it. Attach this dataset as the notebook inpu
 2. `ragv2` demonstrates and exercises the full interactive pipeline.
 3. `rag-api-server` packages that same stack as a deployable real-time API.
 
+## Performance benchmarks
+
+See [`PERFORMANCE_BENCHMARKS.md`](PERFORMANCE_BENCHMARKS.md) for latency (TTFA), stage timings, accuracy, ASR (WAXAL), and ablation results: sequential baseline vs optimized pipeline on 2× Tesla T4.
+
 Research baselines and bottleneck analysis live on the `Research-experiments` branch (Week 6).
