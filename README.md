@@ -17,12 +17,14 @@ Modular production package for the Amharic S2S RAG stack:
 
 ### `amharic-speech-to-speech-ragv2.ipynb`
 
-End-to-end Colab/notebook pipeline (ASR → RAG → LLM → TTS) that uses `amharic_rag/`:
+End-to-end notebook pipeline (ASR → RAG → LLM → TTS) that uses `amharic_rag/`:
 
 - **ASR**: Hohe Amharic ASR
 - **LLM**: Gemma via `llama.cpp`
 - **TTS**: OmniVoice
 - RAG retrieval over the indexed legal corpus with an interactive HTML client
+
+**Kaggle:** [amharic-speech-to-speech-ragv2](https://www.kaggle.com/code/tsegayeshewamare/amharic-speech-to-speech-ragv2)
 
 ### `amharic-speech-to-speech-rag-api-server.ipynb`
 
@@ -31,6 +33,12 @@ Deployment notebook that launches the FastAPI server from `amharic_rag/server/`:
 - Multi-GPU service wiring (ASR / LLM / TTS / retrieval)
 - WebSocket streaming and optional Cloudflare tunnel for public access
 - Runs validation tests before exposing the live endpoint
+
+**Kaggle:** [amharic-speech-to-speech-rag-api-server](https://www.kaggle.com/code/samuelkeno/amharic-speech-to-speech-rag-api-server)
+
+Copy the notebook on Kaggle and run it. Attach this dataset as the notebook input:
+
+**Input dataset:** [amharic-speech-to-speech-rag-api](https://www.kaggle.com/datasets/samuelkeno/amharic-speech-to-speech-rag-api)
 
 ## How they relate
 
