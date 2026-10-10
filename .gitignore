@@ -1,0 +1,7 @@
+﻿__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+Latency_Optimization.pptx
+*.pptx
+_pdf_extract.txt

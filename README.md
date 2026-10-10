@@ -41,3 +41,7 @@ Earlier Ethio-ASR baseline with an Amharic-specialized LLM:
 - Documents an alternate LLM path evaluated before settling on Tiny Aya
 
 Together, these notebooks cover measured cascade benchmarks plus the main interactive stack experiments that informed Week 7 model choices (`final-optimized-system`).
+
+## Performance benchmarks
+
+See [`PERFORMANCE_BENCHMARKS.md`](PERFORMANCE_BENCHMARKS.md) for TTFA, ASR/LLM/TTS comparisons, and latency-optimization analysis for the selected stack (**hohe-asr + Tiny Aya Earth + OmniVoice**).
